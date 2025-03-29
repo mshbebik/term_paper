@@ -14,15 +14,15 @@ Poss::Poss() {
 	y = -1;
 }
 
-Cell::Cell(int indef, Poss start, bool status) {
-	this->indef = indef;
-	this->start = start;
-	this->status = status;
+Cell::Cell(Poss coord, int number, bool is_visited) {
+	this->coord = coord;
+	this->number = number;
+	this->is_visited = is_visited;
 }
 
 Cell::Cell() {
-	indef = -1;
-	start = Poss();
-	status = false;
+	coord = Poss();
+	int number = 0;
+	bool is_visited;	
 }
 

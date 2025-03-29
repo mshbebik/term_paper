@@ -14,12 +14,12 @@ public:
 
 class Cell {
 public:
-	Poss start;
-	int indef;
-	bool status;
-	vector<Poss> field;
+	Poss coord;
+	int number;
+	bool is_visited;
 
-	Cell(int indef, Poss start, bool status = false);
+
+	Cell(Poss coord, int number, bool is_visited = false);
 	Cell();
 	
 };
