@@ -50,6 +50,7 @@ vector<vector <int>> Board::parse_file(string file_name) {
 	for(size_t i = 0; i < nums.size(); i++) {
 		if(nums[i].size() != width) {
 			cerr << "Error: Inccorrect input in \"" << file_name << "\"" << endl; 
+			exit(1);
 		}
 	}	
 	return nums;	
@@ -70,7 +71,7 @@ vector<int> Board::split_by_space_int(string line) {
 
 
 void Board::print_board() {
-	cout << "   ";
+	cout << "    ";
 	for(size_t i = 0; i < bd[0].size(); i++) {
 		cout << i+1 << " ";
 	}
@@ -84,7 +85,7 @@ void Board::print_board() {
 		if(i+1 == 10) cout << i+1 << "│ ";
 		else { cout << i+1 << " │ "; }
 
-		for(int a = 0; a < 10; a++) {
+		for(size_t a = 0; a < bd[0].size(); a++) {
 			cout << bd[i][a].number << " ";
 		}
 		cout << endl;
@@ -92,41 +93,71 @@ void Board::print_board() {
 	cout << endl;
 
 }
-/*
+
+void Board::parse_areas() {
+	vector<Cell> area;
+	for(size_t i = 0; i < bd.size(); i++) {
+		for(size_t k = 0; k < bd[0].size(); k++) {
+			if(bd[i][k].is_visited == false && bd[i][k].number != 0) {
+				select_area(bd[i][k], bd[i][k].coord, area);
+				if((size_t)bd[i][k].number != area.size()) {
+					for(Cell &temp : area) {
+						temp.is_visited = false;
+					}
+					area.clear();
+				}
+				else {
+					areas.push_back(Area(bd[i][k].number, area));
+					area.clear();
+				}
+			}
+		}
+	}
+}
+
+void Board::select_area(Cell cell, Poss start, vector<Cell> &area) {
+	Poss ps[5] = { start, Poss(start.x-1, start.y), Poss(start.x+1, start.y), Poss(start.x, start.y-1), Poss(start.x, start.y+1) };
+	for(int i = 0; i < 5; i++) {
+		if(ps[i].x < 0 || (size_t)ps[i].x >= bd.size() || ps[i].y < 0 || (size_t)ps[i].y >= bd[0].size()) continue;
+		if(bd[ps[i].x][ps[i].y].number == cell.number && bd[ps[i].x][ps[i].y].is_visited == false) {
+			bd[ps[i].x][ps[i].y].is_visited = true;
+			area.push_back(bd[ps[i].x][ps[i].y]);
+			select_area(cell, Poss(ps[i].x, ps[i].y), area);
+		}
+	} 
+}
+
+
+bool Board::is_board_solved() {
+	int sum;
+	for(Area i : areas) {
+		sum += i.number;
+	}
+	return ((size_t)sum == (bd.size()*bd[0].size()));
+
+}
+
+
 void Board::move(Poss start, Poss prev, int number, int nb_count) {
 	if(start.x < 0 || start.x >= 10 || start.y < 0 || start.y >= 10) {
 	 	return;
 	}
-	cout << "Dot: " << start.x << ", " << start.y << endl; 
+	//cout << "Dot: " << start.x << ", " << start.y << endl; 
 	Poss ps[4] = { Poss(start.x-1, start.y), Poss(start.x+1, start.y), Poss(start.x, start.y-1), Poss(start.x, start.y+1) };
 	for(int i = 0; i < 4; i++) {
-		if(ps[i].x < 0 || ps[i].x >= 10 || ps[i].y < 0 || ps[i].y >= 10) return;
+		if(ps[i].x < 0 || ps[i].x >= 10 || ps[i].y < 0 || ps[i].y >= 10) continue;
 		if(nb_count == number) {
 			count++;
 			return;
 		}
-		if(bd[ps[i].x][ps[i].y] == 0 && (ps[i].x != prev.x || ps[i].y != prev.y)) {
+		if(bd[ps[i].x][ps[i].y].number == 0 && (ps[i].x != prev.x || ps[i].y != prev.y)) {
+			//bd[ps[i].x][ps[i].y].number = number;
 			print_board();
-			bd[ps[i].x][ps[i].y] = number;
-			cout << "Total variants: " << get_count() << endl;
 			move(Poss(ps[i].x, ps[i].y), start, number, nb_count+1);
 		}
 	} 
 }
 	
-
-void Board::parse_board() {
-	for(int i = 0; i < 10; i++) {
-		for(int k = 0; k < 10; k++) {
-			if(bd[i][k] != 0) {
-				cells.push_back(Cell(bd[i][k], Poss(i, k));
-			}
-		}
-	}
-
-
-}
-*/
 
 
 	

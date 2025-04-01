@@ -23,6 +23,17 @@ public:
 	Cell();
 	
 };
+
+
+class Area {
+public:
+	int number;
+	vector<Cell> cells;
+
+	Area(int number, vector<Cell> cells);
+	Area();
+
+};
 	
 
 #endif

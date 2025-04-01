@@ -22,7 +22,16 @@ Cell::Cell(Poss coord, int number, bool is_visited) {
 
 Cell::Cell() {
 	coord = Poss();
-	int number = 0;
-	bool is_visited;	
+	number = 0;
+	is_visited = false;	
+}
+
+Area::Area(int number, vector<Cell> cells) {
+	this->number = number;
+	this->cells = cells;
+}
+
+Area::Area() {
+	this->number = 0;
 }
 
