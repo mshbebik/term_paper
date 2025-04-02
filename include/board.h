@@ -17,8 +17,6 @@ public:
 //	       		  {3, 0, 0, 0, 0, 0, 0, 0, 0, 5},
 //	       		  {2, 0, 0, 0, 0, 0, 0, 0, 0, 6},
 //	       		  {0, 3, 4, 0, 4, 6, 0, 2, 1, 0}};
-	
-	int count = 0;
 	vector<vector<Cell>> bd;	
 	vector<Area> areas;
 	Board(string file_name);
@@ -30,8 +28,10 @@ public:
 	void select_area(Cell cell, Poss start, vector<Cell> &area);
 	bool is_board_solved();
 	void print_board();
-	void move(Poss start, Poss prev, int number, int nb_count);
-
+	void make_move(Poss start, Poss prev, int number, int nb_count);
+	void check_possible_moves(Poss start, Poss prev, int number, int nb_count, vector<Area> &moves, int &path_counter, int index = 0);
+	void print_possible_moves(Poss start, Poss prev, int number, int nb_count);
+	void solve();
 };
 
 #endif

@@ -21,7 +21,6 @@ public:
 
 	Cell(Poss coord, int number, bool is_visited = false);
 	Cell();
-	
 };
 
 
@@ -32,7 +31,6 @@ public:
 
 	Area(int number, vector<Cell> cells);
 	Area();
-
 };
 	
 
