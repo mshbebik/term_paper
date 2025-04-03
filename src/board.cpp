@@ -138,7 +138,7 @@ bool Board::is_board_solved() {
 }
 
 
-void Board::check_possible_moves(Poss start, Poss prev, int number, int nb_count, vector<Area> &moves, int &path_counter, int index) {
+void Board::check_possible_moves(Poss start, Poss prev, int number, int nb_count, vector<Area> &moves, int &path_counter, bool status, int index) {
 	if(start.x < 0 || start.x >= 10 || start.y < 0 || start.y >= 10) {
 	 	return;
 	}
@@ -146,20 +146,24 @@ void Board::check_possible_moves(Poss start, Poss prev, int number, int nb_count
 	for(int i = 0; i < 4; i++) {
 		if(ps[i].x < 0 || ps[i].x >= 10 || ps[i].y < 0 || ps[i].y >= 10) continue;
 		if(nb_count == number) {
-			moves.push_back(Area());
-			moves[path_counter+1] = moves[path_counter];
+			if(status == true) {
+				moves.push_back(Area());
+				moves[path_counter+1] = moves[path_counter];
+			}
 			path_counter++;
 			return;
 		}
 		if(bd[ps[i].x][ps[i].y].number == 0 && (ps[i].x != prev.x || ps[i].y != prev.y)) {
-			if((size_t)path_counter >= moves.size()) {
-				moves.push_back(Area());
-			}
-			if((size_t)index >= moves[path_counter].cells.size()) {
-				moves[path_counter].cells.push_back(Cell());
+			if(status == true) {
+				if((size_t)path_counter >= moves.size()) {
+					moves.push_back(Area(number));
+				}
+				if((size_t)index >= moves[path_counter].cells.size()) {
+					moves[path_counter].cells.push_back(Cell());
+				}
+				moves[path_counter].cells[index] = Cell(Poss(ps[i].x, ps[i].y), number);
 			}			
-			moves[path_counter].cells[index] = Cell(Poss(ps[i].x, ps[i].y), number);
-			check_possible_moves(Poss(ps[i].x, ps[i].y), start, number, nb_count+1, moves, path_counter, index+1);
+			check_possible_moves(Poss(ps[i].x, ps[i].y), start, number, nb_count+1, moves, path_counter, index+1, status);
 		}
 	} 
 }
@@ -167,8 +171,15 @@ void Board::check_possible_moves(Poss start, Poss prev, int number, int nb_count
 void Board::print_possible_moves(Poss start, Poss prev, int number, int nb_count) {
 	vector<Area> moves;
 	int path_counter = 0;
-	check_possible_moves(start, prev, number, nb_count, moves, path_counter);
+	check_possible_moves(start, prev, number, nb_count, moves, path_counter, true);
+	//if(moves.size() == 0) {
+	//	cout << "No cells, " << "Moves: " << path_counter << endl;
+	//	return;
+	//}	
 	moves.pop_back();
+	for(Area &i : moves) {
+		i.cells.insert(i.cells.begin(), Cell(start, number));
+	}	
 	int counter = 0;
 	cout << moves.size() << endl;
 	for(Area temp : moves) {
@@ -184,26 +195,81 @@ void Board::print_possible_moves(Poss start, Poss prev, int number, int nb_count
 void Board::make_move(Poss start, Poss prev, int number, int nb_count) {
 	vector<Area> moves;
 	int path_counter = 0;
-	check_possible_moves(start, prev, number, nb_count, moves, path_counter);
+	check_possible_moves(start, prev, number, nb_count, moves, path_counter, true);
 	moves.pop_back();
+
+	for(Area &i : moves) {
+		i.cells.insert(i.cells.begin(), Cell(start, number));
+	}	
 	if(path_counter == 1) {
-		for(Area temp : moves) {
-			for(Cell k : temp.cells) {
-				bd[k.coord.x][k.coord.x].number = number;
-			}
-		}
+		move_on_board(moves[0]);
 		return;		
-	}		
+	}
+	
+	//for(Area i : moves) {
+	//	for(Cell k : i.cells) {
+	//		cout << "(" << k.coord.x << ", " << k.coord.y << endl;
+	//	}	
+	//}
+	int not_blocked_moves_counter = 0;
+	Area not_blocked_move;
+	for(Area i : moves) {
+		//for(Cell k : i.cells) {
+		//	cout << "(" << k.coord.x << ", " << k.coord.y << ")" << endl;
+		//}	
+
+		if(check_is_any_cells_blocked(i) == false) {
+			not_blocked_move = i;
+			not_blocked_moves_counter++;	
+		}
+	}
+	if(not_blocked_moves_counter == 1) {
+		move_on_board(not_blocked_move);
+	}
+
+	
+	
 }
+
+void Board::move_on_board(Area &move, bool status) {
+//	for(Area i : move) {
+//		for(Cell k : move.cells) {
+//			cout << "(" << k.coord.x << ", " << k.coord.y << endl;
+//		}	
+//		sum += i.cells.size();
+//	}	
+//	cout << "abc: " << abc << endl;
+//	cout << move.cells.size() << endl;
+	//Move on board
+	if(status == true) {
+	//	cout << "start" << endl;
+		for(Cell k : move.cells) {
+		//	cout << "(" << k.coord.x << ", " << k.coord.y << ")" << endl;
+		//	cout << "end" << endl;
+			bd[k.coord.x][k.coord.y].number = move.number;
+			bd[k.coord.x][k.coord.y].is_visited = true;
+			
+		}
+		return;
+	}
+	//Remove move on boad
+	for(size_t i = 1; i < move.cells.size(); i++) {
+		bd[move.cells[i].coord.x][move.cells[i].coord.y].number = 0;
+		bd[move.cells[i].coord.x][move.cells[i].coord.y].is_visited = false;
+	}	
+	if(move.cells.size() > 0) bd[move.cells[0].coord.x][move.cells[0].coord.y].is_visited = false;
+}	
 
 
 void Board::solve() {
 	parse_areas();
 //	while(is_board_solved()) {
-		for(size_t i = 0; i < bd.size(); i++) {
-			for(size_t k = 0; k < bd[0].size(); k++) {
+		for(size_t i = 4; i < bd.size(); i++) {
+			for(size_t k = 1; k < bd[0].size(); k++) {
+				if(i == 4 && k == 2) return;
 				if(bd[i][k].number != 0 && bd[i][k].is_visited == false) {
 					make_move(Poss(i, k), Poss(-1, -1), bd[i][k].number, 1);
+				///	print_board();
 				}
 			}		
 		}
@@ -211,11 +277,42 @@ void Board::solve() {
 //	}	
 }	
 
-//void Board::check_blocked_cells() {
-		
+bool Board::check_is_any_cells_blocked(Area &move) {
+//	for(Cell k : move.cells) {
+//		cout << "(" << k.coord.x << ", " << k.coord.y << ")" << endl;
+//	}	
+	move_on_board(move);
+	for(Cell i : move.cells) {
+		Poss ps[4] = { Poss(i.coord.x-1, i.coord.y), Poss(i.coord.x+1, i.coord.y), Poss(i.coord.x, i.coord.y-1), Poss(i.coord.x, i.coord.y+1) };
+		for(int k = 0; k < 4; k++) {
+			if(ps[k].x >= 0 && (size_t)ps[k].x < bd.size() && ps[k].y >= 0 && (size_t)ps[k].y < bd[0].size()) {
+				if(bd[ps[k].x][ps[k].y].number != 0 && bd[ps[k].x][ps[k].y].number != move.number && bd[ps[k].x][ps[k].y].is_visited != true) {
+					int path_counter = 0;
+					vector<Area> not_used;
+					check_possible_moves(ps[k], Poss(-1, -1), bd[ps[k].x][ps[k].y].number, 1, not_used, path_counter);	
+					if(path_counter == 0) {
+						move_on_board(move, false);	
+					       	return true;
+					}       	
+				}	
+			}	
+		}	
+	}
+	move_on_board(move, false);	
+	return false;
+}	
 
-//}	
-	
+
+void Board::show_visited_cells() {
+	for(size_t i = 0; i < bd.size(); i++) {
+		for(size_t k = 0; k < bd[0].size(); k++) {
+			if(bd[i][k].is_visited == true) {
+				bd[i][k].number = -1;
+			}	
+		}	
+	}	
+
+}	
 
 
 	

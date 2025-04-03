@@ -29,9 +29,12 @@ public:
 	bool is_board_solved();
 	void print_board();
 	void make_move(Poss start, Poss prev, int number, int nb_count);
-	void check_possible_moves(Poss start, Poss prev, int number, int nb_count, vector<Area> &moves, int &path_counter, int index = 0);
+	void check_possible_moves(Poss start, Poss prev, int number, int nb_count, vector<Area> &moves, int &path_counter, bool status = false, int index = 0);
 	void print_possible_moves(Poss start, Poss prev, int number, int nb_count);
 	void solve();
+	bool check_is_any_cells_blocked(Area &move);
+	void move_on_board(Area &move, bool status = true);
+	void show_visited_cells();
 };
 
 #endif

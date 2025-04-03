@@ -30,6 +30,7 @@ public:
 	vector<Cell> cells;
 
 	Area(int number, vector<Cell> cells);
+	Area(int number);
 	Area();
 };
 	

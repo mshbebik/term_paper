@@ -21,7 +21,10 @@ int main (void){
 //	}
 //	nw.bd[1][1].number = 2;
 	nw.solve();
+	nw.show_visited_cells();
 	nw.print_board();
+//	nw.print_possible_moves(Poss(4, 4), Poss(-1, -1), 8, 1);
 	return 0;
+
 }
 

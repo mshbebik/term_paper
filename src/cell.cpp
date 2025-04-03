@@ -32,6 +32,11 @@ Area::Area(int number, vector<Cell> cells) {
 }
 
 Area::Area() {
-	this->number = 0;
+	number = 0;
+	cells = vector<Cell>();
 }
+
+Area::Area(int number) {
+	this->number = number;
+}	
 
