@@ -6,19 +6,6 @@
 #include "board.h"
 using namespace std;
 
-
-/*
-void Board::init_board() {
-	for(int i = 0; i < 10; i++) {
-		for(int k = 0; k < 10; k++) {
-			bd[i][k] = 0;
-		}
-	}
-	count = 0;
-}
-*/
-
-
 Board::Board(string file_name) {
 	init_from_file(file_name);
 }
@@ -137,45 +124,44 @@ bool Board::is_board_solved() {
 
 }
 
-
 void Board::check_possible_moves(Poss start, Poss prev, int number, int nb_count, vector<Area> &moves, int &path_counter, bool status, int index) {
-	if(start.x < 0 || start.x >= 10 || start.y < 0 || start.y >= 10) {
-	 	return;
+	if (start.x < 0 || (size_t)start.x >= bd.size() || start.y < 0 || (size_t)start.y >= bd[0].size()) {
+		return;
 	}
 	Poss ps[4] = { Poss(start.x-1, start.y), Poss(start.x+1, start.y), Poss(start.x, start.y-1), Poss(start.x, start.y+1) };
-	for(int i = 0; i < 4; i++) {
-		if(ps[i].x < 0 || ps[i].x >= 10 || ps[i].y < 0 || ps[i].y >= 10) continue;
-		if(nb_count == number) {
-			if(status == true) {
+        for (int i = 0; i < 4; i++) {
+		if (ps[i].x < 0 || (size_t)ps[i].x >= bd.size() || ps[i].y < 0 || (size_t)ps[i].y >= bd[0].size()) continue; 
+		if (nb_count == number) {
+			if (status == true) {
 				moves.push_back(Area());
-				moves[path_counter+1] = moves[path_counter];
+				if ((size_t)path_counter < moves.size() - 1) {
+					moves[path_counter + 1] = moves[path_counter];
+				}
 			}
 			path_counter++;
 			return;
+
 		}
-		if(bd[ps[i].x][ps[i].y].number == 0 && (ps[i].x != prev.x || ps[i].y != prev.y)) {
-			if(status == true) {
-				if((size_t)path_counter >= moves.size()) {
+		if (bd[ps[i].x][ps[i].y].number == 0 && (ps[i].x != prev.x || ps[i].y != prev.y)) {
+			if (status == true) {
+				if ((size_t)path_counter >= moves.size()) {
 					moves.push_back(Area(number));
 				}
-				if((size_t)index >= moves[path_counter].cells.size()) {
+				if ((size_t)index >= moves[path_counter].cells.size()) {
 					moves[path_counter].cells.push_back(Cell());
 				}
 				moves[path_counter].cells[index] = Cell(Poss(ps[i].x, ps[i].y), number);
-			}			
-			check_possible_moves(Poss(ps[i].x, ps[i].y), start, number, nb_count+1, moves, path_counter, index+1, status);
+			}
+			check_possible_moves(Poss(ps[i].x, ps[i].y), start, number, nb_count + 1, moves, path_counter, status, index + 1);
 		}
-	} 
+	}
 }
+
 
 void Board::print_possible_moves(Poss start, Poss prev, int number, int nb_count) {
 	vector<Area> moves;
 	int path_counter = 0;
 	check_possible_moves(start, prev, number, nb_count, moves, path_counter, true);
-	//if(moves.size() == 0) {
-	//	cout << "No cells, " << "Moves: " << path_counter << endl;
-	//	return;
-	//}	
 	moves.pop_back();
 	for(Area &i : moves) {
 		i.cells.insert(i.cells.begin(), Cell(start, number));
@@ -196,56 +182,38 @@ void Board::make_move(Poss start, Poss prev, int number, int nb_count) {
 	vector<Area> moves;
 	int path_counter = 0;
 	check_possible_moves(start, prev, number, nb_count, moves, path_counter, true);
-	moves.pop_back();
+	if(moves.size() > 0) {
+	       	moves.pop_back();
+	}
+
 
 	for(Area &i : moves) {
 		i.cells.insert(i.cells.begin(), Cell(start, number));
 	}	
-	if(path_counter == 1) {
+	if(path_counter == 1 && is_touch_same_number(moves[0]) == false) {
 		move_on_board(moves[0]);
 		return;		
 	}
 	
-	//for(Area i : moves) {
-	//	for(Cell k : i.cells) {
-	//		cout << "(" << k.coord.x << ", " << k.coord.y << endl;
-	//	}	
-	//}
 	int not_blocked_moves_counter = 0;
 	Area not_blocked_move;
 	for(Area i : moves) {
-		//for(Cell k : i.cells) {
-		//	cout << "(" << k.coord.x << ", " << k.coord.y << ")" << endl;
-		//}	
-
 		if(check_is_any_cells_blocked(i) == false) {
 			not_blocked_move = i;
 			not_blocked_moves_counter++;	
 		}
 	}
-	if(not_blocked_moves_counter == 1) {
+	if(not_blocked_moves_counter == 1 && is_touch_same_number(not_blocked_move) == false) {
 		move_on_board(not_blocked_move);
 	}
 
 	
-	
 }
 
-void Board::move_on_board(Area &move, bool status) {
-//	for(Area i : move) {
-//		for(Cell k : move.cells) {
-//			cout << "(" << k.coord.x << ", " << k.coord.y << endl;
-//		}	
-//		sum += i.cells.size();
-//	}	
-//	cout << "abc: " << abc << endl;
-//	cout << move.cells.size() << endl;
+void Board::move_on_board(Area move, bool status) {
 	//Move on board
 	if(status == true) {
-	//	cout << "start" << endl;
 		for(Cell k : move.cells) {
-		//	cout << "(" << k.coord.x << ", " << k.coord.y << ")" << endl;
-		//	cout << "end" << endl;
 			bd[k.coord.x][k.coord.y].number = move.number;
 			bd[k.coord.x][k.coord.y].is_visited = true;
 			
@@ -264,32 +232,31 @@ void Board::move_on_board(Area &move, bool status) {
 void Board::solve() {
 	parse_areas();
 //	while(is_board_solved()) {
-		for(size_t i = 4; i < bd.size(); i++) {
-			for(size_t k = 1; k < bd[0].size(); k++) {
-				if(i == 4 && k == 2) return;
+	for(size_t j = 0; j < 10; j++) {
+		for(size_t i = 0; i < bd.size(); i++) {
+			for(size_t k = 0; k < bd[0].size(); k++) {
 				if(bd[i][k].number != 0 && bd[i][k].is_visited == false) {
 					make_move(Poss(i, k), Poss(-1, -1), bd[i][k].number, 1);
 				///	print_board();
 				}
 			}		
 		}
+	}	
 	//	parse_areas();
 //	}	
 }	
 
-bool Board::check_is_any_cells_blocked(Area &move) {
-//	for(Cell k : move.cells) {
-//		cout << "(" << k.coord.x << ", " << k.coord.y << ")" << endl;
-//	}	
+bool Board::check_is_any_cells_blocked(Area move) {
 	move_on_board(move);
 	for(Cell i : move.cells) {
 		Poss ps[4] = { Poss(i.coord.x-1, i.coord.y), Poss(i.coord.x+1, i.coord.y), Poss(i.coord.x, i.coord.y-1), Poss(i.coord.x, i.coord.y+1) };
 		for(int k = 0; k < 4; k++) {
 			if(ps[k].x >= 0 && (size_t)ps[k].x < bd.size() && ps[k].y >= 0 && (size_t)ps[k].y < bd[0].size()) {
-				if(bd[ps[k].x][ps[k].y].number != 0 && bd[ps[k].x][ps[k].y].number != move.number && bd[ps[k].x][ps[k].y].is_visited != true) {
+				if(bd[ps[k].x][ps[k].y].number != 0 && bd[ps[k].x][ps[k].y].number != move.number && bd[ps[k].x][ps[k].y].is_visited == false) {
 					int path_counter = 0;
 					vector<Area> not_used;
 					check_possible_moves(ps[k], Poss(-1, -1), bd[ps[k].x][ps[k].y].number, 1, not_used, path_counter);	
+
 					if(path_counter == 0) {
 						move_on_board(move, false);	
 					       	return true;
@@ -313,6 +280,30 @@ void Board::show_visited_cells() {
 	}	
 
 }	
+
+
+
+bool Board::is_touch_same_number(const Area move) {
+	for(const Cell i : move.cells) {
+		Poss ps[4] = { Poss(i.coord.x-1, i.coord.y), Poss(i.coord.x+1, i.coord.y), Poss(i.coord.x, i.coord.y-1), Poss(i.coord.x, i.coord.y+1) };
+		for(int k = 0; k < 4; k++) {
+			if(ps[k].x >= 0 && (size_t)ps[k].x < bd.size() && ps[k].y >= 0 && (size_t)ps[k].y < bd[0].size()) {
+				if(bd[ps[k].x][ps[k].y].number == move.number) {
+					bool status = false;
+					for(const Cell j : move.cells) {
+						if(ps[k].x == j.coord.x && ps[k].y == j.coord.y) {
+							status = true;	
+							break;
+						}	
+					}
+					if(status == false) return true;	
+				}	
+			}	
+		}	
+	}
+	return false;
+}	
+
 
 
 	
