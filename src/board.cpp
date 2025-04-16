@@ -3,6 +3,7 @@
 #include <vector>
 #include <sstream>
 #include <fstream>
+#include <algorithm> // for swap() function
 #include "board.h"
 using namespace std;
 
@@ -123,7 +124,7 @@ bool Board::is_board_solved() {
 	return ((size_t)sum == (bd.size()*bd[0].size()));
 
 }
-
+/*
 void Board::check_possible_moves(Poss start, Poss prev, int number, int nb_count, vector<Area> &moves, int &path_counter, bool status, int index) {
 	if (start.x < 0 || (size_t)start.x >= bd.size() || start.y < 0 || (size_t)start.y >= bd[0].size()) {
 		return;
@@ -156,57 +157,523 @@ void Board::check_possible_moves(Poss start, Poss prev, int number, int nb_count
 		}
 	}
 }
-
-
-void Board::print_possible_moves(Poss start, Poss prev, int number, int nb_count) {
-	vector<Area> moves;
+*/
+/*
+int Board::check_possible_moves(Cell cell) {
+	bool hit_status = false;
 	int path_counter = 0;
-	check_possible_moves(start, prev, number, nb_count, moves, path_counter, true);
-	moves.pop_back();
-	for(Area &i : moves) {
-		i.cells.insert(i.cells.begin(), Cell(start, number));
+	int cells_counter = 1;
+	vector<Poss> stack;
+	vector<Poss> used_cells;
+	used_cells.push_back(cell.coord);
+	bd[cell.coord.x][cell.coord.y].is_visited = true;
+	stack.push_back(cell.coord);
+	for(int i = 0; stack.size() > 0; ) {
+		if(cells_counter == cell.number) {
+			stack.pop_back();
+			i--;
+			path_counter++;
+			cells_counter--;
+			continue;
+		}	
+		Poss ps[4] = { Poss(stack[i].x-1, stack[i].y), Poss(stack[i].x+1, stack[i].y), Poss(stack[i].x, stack[i].y-1), Poss(stack[i].x, stack[i].y+1) };
+		for(int k = 0; k < 4; k++) {
+			if(ps[k].x < 0 || (size_t)ps[k].x >= bd.size() || ps[k].y < 0 || (size_t)ps[k].y >= bd[0].size()) continue; 
+			if((bd[ps[k].x][ps[k].y].number == 0 || bd[ps[k].x][ps[k].y].number == cell.number) && bd[ps[k].x][ps[k].y].is_visited == false) {
+				//cout << "poss(" << ps[k].x+1 << ", " << ps[k].y+1 << ")" << endl;
+				//cout << path_counter << endl; 
+				//cout << "//" << endl; 
+				//for(Poss i : stack) {
+					
+			//		cout << "(" << i.x+1 << ", " << i.y+1 << ")" << endl;
+			//	}	
+				
+			//	cout << "//" << endl; 
+
+				used_cells.push_back(Poss(ps[k].x, ps[k].y));
+				stack.push_back(Poss(ps[k].x, ps[k].y));
+				bd[ps[k].x][ps[k].y].is_visited = true;
+				cells_counter++;
+				i++;
+				hit_status = true;
+				break;
+			}	
+		}
+		if(hit_status == false) {	
+			stack.pop_back();
+			i--;
+			cells_counter--;
+		}
+		hit_status = false;
+	}
+	if(used_cells.size() > 0) {
+		for(Poss i : used_cells) {
+			bd[i.x][i.y].is_visited = false;
+		}	
 	}	
+	return path_counter;
+}	
+*/
+
+int Board::check_possible_moves(Cell cell) {
+	vector<Poss> stack;
+	vector<Poss> used_cells;
+	int path_counter = 0;
+	int cell_counter = 1;
+	stack.push_back(cell.coord);
+	bd[cell.coord.x][cell.coord.y].is_in_stack = true;	
+
+		
+	while(stack.size() > 0) {
+		
+		if(path_counter > 10) {
+			for(Poss l : stack) {
+				bd[l.x][l.y].is_in_stack = false;
+				bd[l.x][l.y].in_stack.went_back_near = 0;
+				for(int p = 0; bd[l.x][l.y].in_stack.blocked.size() > 0; p++) {
+					bd[bd[l.x][l.y].in_stack.blocked[p].x][bd[l.x][l.y].in_stack.blocked[p].y].is_visited = false;
+					bd[l.x][l.y].in_stack.blocked.pop_back();
+				}	
+				while(bd[l.x][l.y].in_stack.blocked_count.size() > 0) {
+					bd[l.x][l.y].in_stack.blocked_count.pop_back();
+				}	
+				bd[l.x][l.y].in_stack.blocked_count.push_back(0);
+				bd[l.x][l.y].is_visited = false;
+
+			}	
+		       	break;
+		}
+		
+
+		Poss ps[4] = { Poss(stack[stack.size()-1].x-1, stack[stack.size()-1].y), Poss(stack[stack.size()-1].x+1, stack[stack.size()-1].y),
+		       	       Poss(stack[stack.size()-1].x, stack[stack.size()-1].y-1), Poss(stack[stack.size()-1].x, stack[stack.size()-1].y+1) };
+
+	//	for(Poss p : stack) {
+	//		cout << "(" << p.x+1 << ", " << p.y+1 << ")" << " ";
+	//	}	
+	//	cout << endl;
+	//	cout << path_counter << endl;
+		int k;
+		for(k = 0; k < 4; k++) {
+			if(ps[k].x < 0 || (size_t)ps[k].x >= bd.size() || ps[k].y < 0 || (size_t)ps[k].y >= bd[0].size()) continue; 
+			if((bd[ps[k].x][ps[k].y].number == 0 || bd[ps[k].x][ps[k].y].number == cell.number) && bd[ps[k].x][ps[k].y].is_visited == false) {
+				if(bd[ps[k].x][ps[k].y].is_in_stack == true) {
+					bd[stack.back().x][stack.back().y].is_visited = true;
+					bd[stack.back().x][stack.back().y].in_stack.is_went_back = true;
+					bd[ps[k].x][ps[k].y].in_stack.blocked.push_back(stack.back());
+					bd[ps[k].x][ps[k].y].in_stack.blocked_count.push_back(1);
+			       		stack.push_back(Poss(ps[k].x, ps[k].y));
+					bd[stack.back().x][stack.back().y].in_stack.went_back_near++;
+					break;
+					
+				}	
+				//default
+			       	stack.push_back(Poss(ps[k].x, ps[k].y));
+				cell_counter++;
+								
+				bd[ps[k].x][ps[k].y].is_in_stack = true;
+				//default
+				if(cell_counter == cell.number) {
+
+		//			cout << "== (" << ps[k].x+1 << ", " << ps[k].y+1 << ")" << endl; 
+					cell_counter--;
+					path_counter++;
+					bd[ps[k].x][ps[k].y].is_visited = true;
+					stack.pop_back();
+					bd[ps[k].x][ps[k].y].is_in_stack = false;
+					bd[stack.back().x][stack.back().y].in_stack.blocked.push_back(Poss(ps[k].x, ps[k].y));
+					bd[stack.back().x][stack.back().y].in_stack.blocked_count.back()++;
+					continue;
+				}
+				break;
+			}	
+		//	cout << "xx (" << ps[k].x+1 << ", " << ps[k].y+1 << ")" << endl; 
+
+		}
+
+		if(k == 4 && bd[stack.back().x][stack.back().y].in_stack.went_back_near != 0) {
+		//	for(Poss j : bd[stack.back().x][stack.back().y].in_stack.blocked) {
+		//		bd[j.x][j.y].is_visited = false;
+		//	}	
+		//	cout << "!=0: (" << stack.back().x+1 << ", " << stack.back().y+1 << ")" << endl; 
+			for(int j = 0; j < bd[stack.back().x][stack.back().y].in_stack.blocked_count.back(); j++) {
+				bd[bd[stack.back().x][stack.back().y].in_stack.blocked[bd[stack.back().x][stack.back().y].in_stack.blocked.size()-j-1].x][bd[stack.back().x][stack.back().y].in_stack.blocked[bd[stack.back().x][stack.back().y].in_stack.blocked.size()-j-1].y].is_visited = false;
+			}	
+			for(int j = 0; j < bd[stack.back().x][stack.back().y].in_stack.blocked_count.back(); j++) {
+				bd[stack.back().x][stack.back().y].in_stack.blocked.pop_back();
+			}	
+			bd[stack.back().x][stack.back().y].in_stack.blocked_count.pop_back();
+		//	bd[stack.back().x][stack.back().y].in_stack.blocked.clear();
+			bd[stack.back().x][stack.back().y].in_stack.went_back_near--;
+			if(bd[stack.back().x][stack.back().y].in_stack.is_went_back == true) bd[stack.back().x][stack.back().y].in_stack.is_went_back = false;
+			bd[stack[stack.size()-2].x][stack[stack.size()-2].y].in_stack.blocked.push_back(stack.back());	
+			bd[stack[stack.size()-2].x][stack[stack.size()-2].y].in_stack.blocked_count.back()++;	
+			bd[stack.back().x][stack.back().y].is_visited = true;	
+			stack.pop_back();
+			continue;
+		}	
+		if(k == 4 && bd[stack.back().x][stack.back().y].in_stack.went_back_near == 0) {
+		//	for(Poss j : bd[stack.back().x][stack.back().y].in_stack.blocked) {
+		//		bd[j.x][j.y].is_visited = false;
+		//	}	
+		//	cout << "==0: (" << stack.back().x+1 << ", " << stack.back().y+1 << ")" << endl; 
+			for(int j = 0; j < bd[stack.back().x][stack.back().y].in_stack.blocked_count.back(); j++) {
+				bd[bd[stack.back().x][stack.back().y].in_stack.blocked[bd[stack.back().x][stack.back().y].in_stack.blocked.size()-j-1].x][bd[stack.back().x][stack.back().y].in_stack.blocked[bd[stack.back().x][stack.back().y].in_stack.blocked.size()-j-1].y].is_visited = false;
+			}	
+			for(int j = 0; j < bd[stack.back().x][stack.back().y].in_stack.blocked_count.back(); j++) {
+				bd[stack.back().x][stack.back().y].in_stack.blocked.pop_back();
+			}	
+		//	bd[stack.back().x][stack.back().y].in_stack.blocked.clear();
+			bd[stack.back().x][stack.back().y].in_stack.blocked_count.back() = 0;
+			if(bd[stack.back().x][stack.back().y].in_stack.is_went_back == true) bd[stack.back().x][stack.back().y].in_stack.is_went_back = false;
+			if(stack.size() > 1) bd[stack[stack.size()-2].x][stack[stack.size()-2].y].in_stack.blocked.push_back(stack.back());	
+			if(stack.size() > 1) bd[stack[stack.size()-2].x][stack[stack.size()-2].y].in_stack.blocked_count.back()++;	
+			bd[stack.back().x][stack.back().y].is_visited = true;
+			bd[stack.back().x][stack.back().y].is_in_stack = false;
+			cell_counter--;
+			stack.pop_back();
+			
+		}	
+
+	}	
+	bd[cell.coord.x][cell.coord.y].is_visited = false;
+	return path_counter;
+}
+
+vector<Area> Board::get_possible_moves(Cell cell) {
+	vector<Area>moves;
+	vector<Poss> stack;
+	vector<Poss> used_cells;
+	vector<Poss> went_back;
+	int path_counter = 0;
+	int cell_counter = 1;
+//	int went_trail = 0;
+//	bool status = false;
+	moves.push_back(Area(cell.number));
+	moves[path_counter].cells.push_back(cell);
+	stack.push_back(cell.coord);
+	bd[cell.coord.x][cell.coord.y].is_in_stack = true;	
+
+		
+	while(stack.size() > 0) {
+		
+		if(path_counter > 200) {
+			for(Poss l : stack) {
+				bd[l.x][l.y].is_in_stack = false;
+				bd[l.x][l.y].in_stack.went_back_near = 0;
+				for(int p = 0; bd[l.x][l.y].in_stack.blocked.size() > 0; p++) {
+					bd[bd[l.x][l.y].in_stack.blocked[p].x][bd[l.x][l.y].in_stack.blocked[p].y].is_visited = false;
+					bd[l.x][l.y].in_stack.blocked.pop_back();
+				}	
+				while(bd[l.x][l.y].in_stack.blocked_count.size() > 0) {
+					bd[l.x][l.y].in_stack.blocked_count.pop_back();
+				}	
+				bd[l.x][l.y].in_stack.blocked_count.push_back(0);
+				bd[l.x][l.y].is_visited = false;
+
+			}	
+		       	break;
+		}
+			
+		Poss ps[4] = { Poss(stack[stack.size()-1].x-1, stack[stack.size()-1].y), Poss(stack[stack.size()-1].x+1, stack[stack.size()-1].y),
+		       	       Poss(stack[stack.size()-1].x, stack[stack.size()-1].y-1), Poss(stack[stack.size()-1].x, stack[stack.size()-1].y+1) };
+
+	//	for(Poss p : stack) {
+	//		cout << "(" << p.x+1 << ", " << p.y+1 << ")" << " ";
+	//	}	
+	//	cout << endl;
+	//	cout << path_counter << endl;
+		
+		int k;
+		for(k = 0; k < 4; k++) {
+			if(ps[k].x < 0 || (size_t)ps[k].x >= bd.size() || ps[k].y < 0 || (size_t)ps[k].y >= bd[0].size()) continue; 
+			if((bd[ps[k].x][ps[k].y].number == 0 || bd[ps[k].x][ps[k].y].number == cell.number) && bd[ps[k].x][ps[k].y].is_visited == false) {
+				if(bd[ps[k].x][ps[k].y].is_in_stack == true) {
+					bd[stack.back().x][stack.back().y].is_visited = true;
+					bd[stack.back().x][stack.back().y].in_stack.is_went_back = true;
+					went_back.push_back(Poss(stack.back().x, stack.back().y));
+					bd[ps[k].x][ps[k].y].in_stack.blocked.push_back(stack.back());
+					bd[ps[k].x][ps[k].y].in_stack.blocked_count.push_back(1);
+			       		stack.push_back(Poss(ps[k].x, ps[k].y));
+					bd[stack.back().x][stack.back().y].in_stack.went_back_near++;
+					break;
+					
+				}	
+				//default
+			       	stack.push_back(Poss(ps[k].x, ps[k].y));
+				cell_counter++;
+				if(bd[ps[k].x][ps[k].y].number == cell.number) { 
+					moves[path_counter].cells.push_back(Cell(Poss(ps[k].x, ps[k].y), cell.number, true));
+				}
+				else{
+					moves[path_counter].cells.push_back(Cell(Poss(ps[k].x, ps[k].y), cell.number, false));
+				}	
+
+				bd[ps[k].x][ps[k].y].is_in_stack = true;
+				//default
+				if(cell_counter == cell.number) {
+
+				//	cout << "== (" << ps[k].x+1 << ", " << ps[k].y+1 << ")" << endl; 
+					cell_counter--;
+					path_counter++;
+					moves.push_back(Area(cell.number));
+					for(Cell tmp : moves[path_counter-1].cells) {
+						moves[path_counter].cells.push_back(tmp);
+					}
+					moves[path_counter].cells.pop_back();	
+					bd[ps[k].x][ps[k].y].is_visited = true;
+					stack.pop_back();
+					bd[ps[k].x][ps[k].y].is_in_stack = false;
+					bd[stack.back().x][stack.back().y].in_stack.blocked.push_back(Poss(ps[k].x, ps[k].y));
+					bd[stack.back().x][stack.back().y].in_stack.blocked_count.back()++;
+					continue;
+				}
+				break;
+			}	
+//			cout << "xx (" << ps[k].x+1 << ", " << ps[k].y+1 << ")" << endl; 
+
+
+		}
+		if(k == 4 && bd[stack.back().x][stack.back().y].in_stack.went_back_near != 0 /*&& went_trail == 0*/) {
+		//	for(Poss j : bd[stack.back().x][stack.back().y].in_stack.blocked) {
+		//		bd[j.x][j.y].is_visited = false;
+		//	}	
+//			cout << "!=0: (" << stack.back().x+1 << ", " << stack.back().y+1 << ")" << endl; 
+			for(int j = 0; j < bd[stack.back().x][stack.back().y].in_stack.blocked_count.back(); j++) {
+				bd[bd[stack.back().x][stack.back().y].in_stack.blocked[bd[stack.back().x][stack.back().y].in_stack.blocked.size()-j-1].x][bd[stack.back().x][stack.back().y].in_stack.blocked[bd[stack.back().x][stack.back().y].in_stack.blocked.size()-j-1].y].is_visited = false;
+			}	
+			for(int j = 0; j < bd[stack.back().x][stack.back().y].in_stack.blocked_count.back(); j++) {
+				bd[stack.back().x][stack.back().y].in_stack.blocked.pop_back();
+			}	
+			bd[stack.back().x][stack.back().y].in_stack.blocked_count.pop_back();
+		//	bd[stack.back().x][stack.back().y].in_stack.blocked.clear();
+			if(went_back.size() > 0) went_back.pop_back();
+			bd[stack.back().x][stack.back().y].in_stack.went_back_near--;
+			if(bd[stack.back().x][stack.back().y].in_stack.is_went_back == true) bd[stack.back().x][stack.back().y].in_stack.is_went_back = false;
+			bd[stack[stack.size()-2].x][stack[stack.size()-2].y].in_stack.blocked.push_back(stack.back());	
+			bd[stack[stack.size()-2].x][stack[stack.size()-2].y].in_stack.blocked_count.back()++;	
+			bd[stack.back().x][stack.back().y].is_visited = true;	
+			stack.pop_back();
+			continue;
+		}	
+		if(k == 4 && went_back.size() != 0 && (stack.back().x != went_back.back().x || stack.back().y != went_back.back().y)) {
+		//	cout << went_back.size() << endl;
+			bd[went_back.back().x][went_back.back().y].is_visited = false;
+			bd[stack.back().x][stack.back().y].is_visited = true;
+			stack.push_back(Poss(went_back.back().x, went_back.back().y));
+			bd[went_back.back().x][went_back.back().y].in_stack.blocked_count.push_back(0);
+			bd[went_back.back().x][went_back.back().y].in_stack.is_jumped_back = true;
+			went_back.pop_back();
+//			went_trail++;
+//			status = true;
+			continue;
+
+
+		}	
+		if(k == 4 && (bd[stack.back().x][stack.back().y].in_stack.went_back_near == 0 /*|| status == true*/)) {
+		//	for(Poss j : bd[stack.back().x][stack.back().y].in_stack.blocked) {
+		//		bd[j.x][j.y].is_visited = false;
+		//	}	
+		//	
+//			cout << "==0: (" << stack.back().x+1 << ", " << stack.back().y+1 << "),   " << went_back.size() << endl; 
+		//	cout << "ww: (" << went_back.back().x+1 << ", " << went_back.back().y+1 << "),   " << went_back.size() << endl; 
+			for(int j = 0; j < bd[stack.back().x][stack.back().y].in_stack.blocked_count.back(); j++) {
+				bd[bd[stack.back().x][stack.back().y].in_stack.blocked[bd[stack.back().x][stack.back().y].in_stack.blocked.size()-j-1].x][bd[stack.back().x][stack.back().y].in_stack.blocked[bd[stack.back().x][stack.back().y].in_stack.blocked.size()-j-1].y].is_visited = false;
+			}	
+			for(int j = 0; j < bd[stack.back().x][stack.back().y].in_stack.blocked_count.back(); j++) {
+				bd[stack.back().x][stack.back().y].in_stack.blocked.pop_back();
+			}	
+		//	bd[stack.back().x][stack.back().y].in_stack.blocked.clear();
+			if(bd[stack.back().x][stack.back().y].in_stack.is_jumped_back == true) bd[stack.back().x][stack.back().y].in_stack.blocked_count.pop_back(); 
+			else bd[stack.back().x][stack.back().y].in_stack.blocked_count.back() = 0;
+			if(bd[stack.back().x][stack.back().y].in_stack.is_went_back == true && bd[stack.back().x][stack.back().y].in_stack.is_jumped_back == false) bd[stack.back().x][stack.back().y].in_stack.is_went_back = false;
+			if(bd[stack.back().x][stack.back().y].in_stack.is_jumped_back == false) {
+				if(stack.size() > 1) bd[stack[stack.size()-2].x][stack[stack.size()-2].y].in_stack.blocked.push_back(stack.back());	
+				if(stack.size() > 1) bd[stack[stack.size()-2].x][stack[stack.size()-2].y].in_stack.blocked_count.back()++;	
+				bd[stack.back().x][stack.back().y].is_in_stack = false;
+				moves[path_counter].cells.pop_back();
+				cell_counter--;
+			}
+			bd[stack.back().x][stack.back().y].is_visited = true;
+			if(bd[stack.back().x][stack.back().y].in_stack.is_jumped_back == true) bd[stack.back().x][stack.back().y].in_stack.is_jumped_back = false; 
+		//	bd[stack[stack.size()-1-went_trail].x][stack[stack.size()-1-went_trail].y].is_visited = false;
+//			if(went_trail > 0) went_trail--;
+//			if(went_trail == 0) status = false;
+			stack.pop_back();
+			
+		}	
+
+	}
+	if(moves.size() > 0) moves.pop_back();	
+	bd[cell.coord.x][cell.coord.y].is_visited = false;
+	return moves;
+}		
+
+
+
+
+/*
+vector<Area> Board::get_possible_moves(Cell cell) {
+	bool hit_status = false;
+	int path_counter = 0;
+	int cells_counter = 1;
+	vector<Area> moves;
+	vector<Cell> stack;
+	vector<Poss> used_cells;
+	cell.is_visited = true;
+	moves.push_back(Area(cell.number));
+	moves[path_counter].cells.push_back(cell);	
+	used_cells.push_back(cell.coord);
+	bd[cell.coord.x][cell.coord.y].is_visited = true;
+	stack.push_back(cell);
+	for(int i = 0; stack.size() > 0; ) {
+		if(cells_counter == cell.number) {
+			stack.pop_back();
+			i--;
+			path_counter++;
+			moves.push_back(Area(cell.number));
+			for(Cell j : stack) {
+				moves[path_counter].cells.push_back(Cell(j.coord, j.number, j.is_visited));
+			}
+			cells_counter--;
+			continue;
+		}	
+		if(stack.size() == 1) {
+		//	cout << "sdfsdfsdf " << endl; 
+			while((int)moves[path_counter].cells.size() > 1 ) {
+				moves[path_counter].cells.pop_back();
+			}	
+		}
+		if(stack.size() == 2) {
+		//	cout << "sdfsdfsdf " << endl; 
+			while((int)moves[path_counter].cells.size() > 2 ) {
+				moves[path_counter].cells.pop_back();
+			}	
+		}
+
+		
+		Poss ps[4] = { Poss(stack[i].coord.x-1, stack[i].coord.y), Poss(stack[i].coord.x+1, stack[i].coord.y), Poss(stack[i].coord.x, stack[i].coord.y-1), Poss(stack[i].coord.x, stack[i].coord.y+1) };
+		for(int k = 0; k < 4; k++) {
+			if(ps[k].x < 0 || (size_t)ps[k].x >= bd.size() || ps[k].y < 0 || (size_t)ps[k].y >= bd[0].size()) continue; 
+			if((bd[ps[k].x][ps[k].y].number == 0 || bd[ps[k].x][ps[k].y].number == cell.number) && bd[ps[k].x][ps[k].y].is_visited == false) {
+
+				if(bd[ps[k].x][ps[k].y].number == cell.number) {
+					moves[path_counter].cells.push_back(Cell(Poss(ps[k].x, ps[k].y), cell.number, true));	
+					stack.push_back(Cell(Poss(ps[k].x, ps[k].y), cell.number, true));
+				}
+				else {
+					moves[path_counter].cells.push_back(Cell(Poss(ps[k].x, ps[k].y), cell.number, false));	
+					stack.push_back(Cell(Poss(ps[k].x, ps[k].y), cell.number, false));
+				}	
+				used_cells.push_back(Poss(ps[k].x, ps[k].y));
+				bd[ps[k].x][ps[k].y].is_visited = true;
+				cells_counter++;
+				i++;
+				hit_status = true;
+				break;
+			}	
+		}
+		if(hit_status == false) {	
+			stack.pop_back();
+			i--;
+			cells_counter--;
+		}
+		hit_status = false;
+	}
+	if(used_cells.size() > 0) {
+		for(Poss i : used_cells) {
+			bd[i.x][i.y].is_visited = false;
+		}	
+	}
+	if(used_cells.size() == 1) moves.pop_back();
+	else { moves.pop_back(); }	
+	return moves;
+}
+*/
+
+void Board::print_possible_moves(Cell cell) {
+	vector<Area> moves = get_possible_moves(cell);
 	int counter = 0;
 	cout << moves.size() << endl;
 	for(Area temp : moves) {
+//		if(temp.cells.back().coord.x == 9 && temp.cells.back().coord.y == 5) {
 		for(Cell k : temp.cells) {
 			cout << "[" << counter << "]: " << "poss(" << k.coord.x+1 << ", " << k.coord.y+1 << ")" << endl;  	
+			bd[k.coord.x][k.coord.y].number = moves[0].number;
 		}	
+		print_board();	
+		for(Cell k : temp.cells) {
+			bd[k.coord.x][k.coord.y].number = 0;
+		}	
+//		}
 		counter++;
 	}		
 
 
+
 }	
 
-void Board::make_move(Poss start, Poss prev, int number, int nb_count) {
-	vector<Area> moves;
-	int path_counter = 0;
-	check_possible_moves(start, prev, number, nb_count, moves, path_counter, true);
-	if(moves.size() > 0) {
-	       	moves.pop_back();
-	}
+void Board::make_move(Cell cell) {
+//	cout << "sdfsdfsdf " << endl;
+	vector<Area> moves = get_possible_moves(cell);
+//	cout << "Number [" << moves[0].number << "]: " << moves.size() << endl; 
 
+	
+//	int cnt = 0;
+//	for(Area i : moves) {
+//		for(Cell k : i.cells) {
+//			cout << cnt << " [" << k.coord.x+1 << ", " << k.coord.y+1 << "]" << endl;
+//		}
+//		cnt++;	
+//	}	
 
-	for(Area &i : moves) {
-		i.cells.insert(i.cells.begin(), Cell(start, number));
-	}	
-	if(path_counter == 1 && is_touch_same_number(moves[0]) == false) {
+	if((int)moves.size() == 1 && is_touch_same_number(moves[0]) == false) {
+		cout << "Basic: " << moves[0].number << endl;
 		move_on_board(moves[0]);
 		return;		
 	}
 	
 	int not_blocked_moves_counter = 0;
-	Area not_blocked_move;
+	vector<Area> not_blocked_move;
 	for(Area i : moves) {
 		if(check_is_any_cells_blocked(i) == false) {
-			not_blocked_move = i;
+			not_blocked_move.push_back(i);
 			not_blocked_moves_counter++;	
 		}
 	}
-	if(not_blocked_moves_counter == 1 && is_touch_same_number(not_blocked_move) == false) {
-		move_on_board(not_blocked_move);
+	if(not_blocked_moves_counter == 1 && is_touch_same_number(not_blocked_move[0]) == false) {
+		cout << "Block: " << moves[0].number << endl;
+		move_on_board(not_blocked_move[0]);
+		return;
 	}
-
+	for(Area i : not_blocked_move) {
+		if(is_piercies(i) >= 2 && is_touch_same_number(i) == false) {
+			cout << "Block >= 2: " << moves[0].number << endl;
+		//	if(check_is_any_cells_blocked_deep(i) == false) {
+			       	move_on_board(i);
+				return;	
+		//	}	
+		}	
+	}	
+//	vector<Area> groat;
+//	vector<int> diff;
+//	for(Area i : not_blocked_move) {
+//		int difference = 0;
+//		if(is_groat_move(i, difference) == true && is_touch_same_number(i) == false) {
+//			groat.push_back(i);
+//			diff.push_back(difference);
+//		}		
+//	}	
+//	
+//	int tmp = 9;
+//	Area move;
+//	for(size_t i = 0; i < groat.size(); i++) {
+//		if(diff[i] < tmp) {
+//			tmp = diff[i];
+//			move = groat[i];
+//		}	
+//	}	
+//	move_on_board(move);
 	
 }
 
@@ -221,23 +688,27 @@ void Board::move_on_board(Area move, bool status) {
 		return;
 	}
 	//Remove move on boad
-	for(size_t i = 1; i < move.cells.size(); i++) {
-		bd[move.cells[i].coord.x][move.cells[i].coord.y].number = 0;
-		bd[move.cells[i].coord.x][move.cells[i].coord.y].is_visited = false;
+	for(Cell i : move.cells) {
+		if(i.is_visited == true) {
+			bd[i.coord.x][i.coord.y].is_visited = false;
+			continue;
+		}	
+		bd[i.coord.x][i.coord.y].number = 0;
+		bd[i.coord.x][i.coord.y].is_visited = false;
 	}	
-	if(move.cells.size() > 0) bd[move.cells[0].coord.x][move.cells[0].coord.y].is_visited = false;
 }	
 
 
 void Board::solve() {
 	parse_areas();
 //	while(is_board_solved()) {
-	for(size_t j = 0; j < 10; j++) {
+	for(size_t j = 0; j < 1; j++) {
 		for(size_t i = 0; i < bd.size(); i++) {
 			for(size_t k = 0; k < bd[0].size(); k++) {
 				if(bd[i][k].number != 0 && bd[i][k].is_visited == false) {
-					make_move(Poss(i, k), Poss(-1, -1), bd[i][k].number, 1);
-				///	print_board();
+					make_move(Cell(Poss(i, k), bd[i][k].number, true));
+				//	print_board();
+				//	show_visited_cells();
 				}
 			}		
 		}
@@ -253,14 +724,33 @@ bool Board::check_is_any_cells_blocked(Area move) {
 		for(int k = 0; k < 4; k++) {
 			if(ps[k].x >= 0 && (size_t)ps[k].x < bd.size() && ps[k].y >= 0 && (size_t)ps[k].y < bd[0].size()) {
 				if(bd[ps[k].x][ps[k].y].number != 0 && bd[ps[k].x][ps[k].y].number != move.number && bd[ps[k].x][ps[k].y].is_visited == false) {
-					int path_counter = 0;
-					vector<Area> not_used;
-					check_possible_moves(ps[k], Poss(-1, -1), bd[ps[k].x][ps[k].y].number, 1, not_used, path_counter);	
-
+					int path_counter = check_possible_moves(Cell(ps[k], bd[ps[k].x][ps[k].y].number, false));	
 					if(path_counter == 0) {
 						move_on_board(move, false);	
 					       	return true;
 					}       	
+				}	
+			}	
+		}	
+	}
+	move_on_board(move, false);	
+	return false;
+}	
+
+bool Board::check_is_any_cells_blocked_deep(Area move) {
+	move_on_board(move);
+	for(Cell i : move.cells) {
+		Poss ps[4] = { Poss(i.coord.x-1, i.coord.y), Poss(i.coord.x+1, i.coord.y), Poss(i.coord.x, i.coord.y-1), Poss(i.coord.x, i.coord.y+1) };
+		for(int k = 0; k < 4; k++) {
+			if(ps[k].x >= 0 && (size_t)ps[k].x < bd.size() && ps[k].y >= 0 && (size_t)ps[k].y < bd[0].size()) {
+				if(bd[ps[k].x][ps[k].y].number != 0 && bd[ps[k].x][ps[k].y].number != move.number && bd[ps[k].x][ps[k].y].is_visited == false) {
+					vector<Area>moves = get_possible_moves(Cell(ps[k], bd[ps[k].x][ps[k].y].number, true));	
+					for(Area mv : moves) {
+						if(check_is_any_cells_blocked(mv) == true) {
+							move_on_board(move, false);	
+						       	return true;
+						}
+					}	
 				}	
 			}	
 		}	
@@ -283,14 +773,14 @@ void Board::show_visited_cells() {
 
 
 
-bool Board::is_touch_same_number(const Area move) {
-	for(const Cell i : move.cells) {
+bool Board::is_touch_same_number(Area move) {
+	for(Cell i : move.cells) {
 		Poss ps[4] = { Poss(i.coord.x-1, i.coord.y), Poss(i.coord.x+1, i.coord.y), Poss(i.coord.x, i.coord.y-1), Poss(i.coord.x, i.coord.y+1) };
 		for(int k = 0; k < 4; k++) {
 			if(ps[k].x >= 0 && (size_t)ps[k].x < bd.size() && ps[k].y >= 0 && (size_t)ps[k].y < bd[0].size()) {
 				if(bd[ps[k].x][ps[k].y].number == move.number) {
 					bool status = false;
-					for(const Cell j : move.cells) {
+					for(Cell j : move.cells) {
 						if(ps[k].x == j.coord.x && ps[k].y == j.coord.y) {
 							status = true;	
 							break;
@@ -305,10 +795,86 @@ bool Board::is_touch_same_number(const Area move) {
 }	
 
 
+int Board::is_piercies(Area move) {
+	int count = 0;
+	vector<Cell> tmp;
+	for(Cell i : move.cells) {
+		if(i.is_visited == true) {
+			tmp.push_back(i);
+		}
+	}
+	
+	if(tmp.size() <= 2) return (int)tmp.size();	
+	for(size_t i = 0; i < tmp.size()-1; i++) {
+		if(is_stand_near(tmp[i], tmp[i+1]) == false) {
+			count++;
+		}	
+	}
+	if(is_stand_near(tmp[0], tmp[tmp.size()-1]) == false) {
+		count++;
+	}		
+	return count;
+}
+
+
+
+//int Board::is_piercies(Area move) {
+//
+//	int count = 0;
+//	for(Cell i : move.cells) {
+//		if(i.is_visited == true && is_stand_near(move.cells[0], i) == false) {
+//		//	cout << i.number << " [" << i.coord.x+1 << ", " << i.coord.y+1 << "]" << endl;
+//			count++;
+//		}
+//		
+//	}	
+//	return count;
+//}	
 
 	
 
 
+bool Board::is_stand_near(Cell start, Cell check) {
+	if(check.coord.x == start.coord.x && check.coord.y == start.coord.y) return false;
+	if(check.coord.x == start.coord.x - 1 && check.coord.y == start.coord.y) return true;
+	if(check.coord.x == start.coord.x + 1 && check.coord.y == start.coord.y) return true;
+	if(check.coord.x == start.coord.x && check.coord.y == start.coord.y - 1) return true;
+	if(check.coord.x == start.coord.x && check.coord.y == start.coord.y + 1) return true;
+	return false;
+}	
+
+
+bool Board::is_groat_move(Area move, int &difference) {
+	int blocked = 0;
+	int all = 0;
+	for(Cell i : move.cells) {
+		Poss ps[4] = { Poss(i.coord.x-1, i.coord.y), Poss(i.coord.x+1, i.coord.y), Poss(i.coord.x, i.coord.y-1), Poss(i.coord.x, i.coord.y+1) };
+		for(int k = 0; k < 4; k++) {
+			if(ps[k].x >= 0 && (size_t)ps[k].x < bd.size() && ps[k].y >= 0 && (size_t)ps[k].y < bd[0].size()) {
+				if(bd[ps[k].x][ps[k].y].number != move.number && bd[ps[k].x][ps[k].y].number != 0) {
+					blocked++;
+				}	
+				if(bd[ps[k].x][ps[k].y].number == move.number) {
+					bool is_move_cell = false;
+					for(Cell j : move.cells) {
+						if(ps[k].x == j.coord.x && ps[k].y == j.coord.y) {
+							is_move_cell = true;	
+							break;
+						}	
+					}
+					if(is_move_cell == false) blocked++;	
+				}	
+			}
+			else {
+				blocked++;
+			}	
+		}	
+	}
+	if(move.cells.size() == 2) all = 6;
+	if(move.cells.size() > 2) all = 6 + ((move.number-2) * 2);
+	difference = all - blocked;
+	return ((all - 1 == blocked) || (all-2 == blocked)) ? true : false;
+}	
 
 
 

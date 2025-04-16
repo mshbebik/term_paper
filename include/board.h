@@ -28,14 +28,20 @@ public:
 	void select_area(Cell cell, Poss start, vector<Cell> &area);
 	bool is_board_solved();
 	void print_board();
-	void make_move(Poss start, Poss prev, int number, int nb_count);
-	void check_possible_moves(Poss start, Poss prev, int number, int nb_count, vector<Area> &moves, int &path_counter, bool status = false, int index = 0);
-	void print_possible_moves(Poss start, Poss prev, int number, int nb_count);
+	void make_move(Cell cell);
+//	void check_possible_moves(Poss start, Poss prev, int number, int nb_count, vector<Area> &moves, int &path_counter, bool status = false, int index = 0);
+	void print_possible_moves(Cell cell);
 	void solve();
 	bool check_is_any_cells_blocked(Area move);
 	void move_on_board(Area move, bool status = true);
 	void show_visited_cells();
 	bool is_touch_same_number(Area move);
+	int check_possible_moves(Cell cell);
+	vector<Area> get_possible_moves(Cell cell);
+	int is_piercies(Area move);
+	bool is_stand_near(Cell start, Cell check);
+	bool check_is_any_cells_blocked_deep(Area move);
+	bool is_groat_move(Area move, int &difference);
 
 };
 
