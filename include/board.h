@@ -43,6 +43,9 @@ public:
 	bool check_is_any_cells_blocked_deep(Area move);
 	bool is_groat_move(Area move, int &difference);
 	int check_free_space(Area move); 
+	int check_single_cell_moves(Cell cell, Cell &possible_move);
+	void single_cell_move_on_board(Cell move, bool status = true);
+	void select_area_special(Cell cell, vector<Cell> &area);
 
 };
 

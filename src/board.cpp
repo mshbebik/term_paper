@@ -95,6 +95,7 @@ void Board::parse_areas() {
 					area.clear();
 				}
 				else {
+					
 					areas.push_back(Area(bd[i][k].number, area));
 					area.clear();
 				}
@@ -357,7 +358,7 @@ vector<Area> Board::get_possible_moves(Cell cell) {
 		
 	while(stack.size() > 0) {
 		
-		if(path_counter > ((cell.number == 7) ? 1200 : 200)) {
+		if(path_counter > 200) {
 			for(Poss l : stack) {
 				bd[l.x][l.y].is_in_stack = false;
 				bd[l.x][l.y].in_stack.went_back_near = 0;
@@ -614,7 +615,6 @@ void Board::print_possible_moves(Cell cell) {
 }	
 
 void Board::make_move(Cell cell) {
-//	cout << "sdfsdfsdf " << endl;
 	vector<Area> moves = get_possible_moves(cell);
 //	cout << "Number [" << moves[0].number << "]: " << moves.size() << endl; 
 
@@ -628,7 +628,6 @@ void Board::make_move(Cell cell) {
 //	}	
 
 	if((int)moves.size() == 1 && is_touch_same_number(moves[0]) == false) {
-		cout << "Basic: " << moves[0].number << endl;
 		move_on_board(moves[0]);
 		return;		
 	}
@@ -642,11 +641,16 @@ void Board::make_move(Cell cell) {
 		}
 	}
 	if(not_blocked_moves_counter == 1 && is_touch_same_number(not_blocked_move[0]) == false) {
-		cout << "Block: " << moves[0].number << endl;
 		move_on_board(not_blocked_move[0]);
 		return;
 	}
-	/*
+
+	Cell possible_move;
+	if(check_single_cell_moves(cell, possible_move) == 1) {
+		single_cell_move_on_board(possible_move);	
+	}	
+
+	
 	vector<Area> mvs;
 	vector<int> free_space;
 	for(Area i : not_blocked_move) {
@@ -689,7 +693,7 @@ void Board::make_move(Cell cell) {
 //		}	
 //	}	
 //	move_on_board(move);
-	*/
+	
 	
 }
 
@@ -718,7 +722,8 @@ void Board::move_on_board(Area move, bool status) {
 void Board::solve() {
 	parse_areas();
 //	while(is_board_solved()) {
-	for(size_t j = 0; j < 3; j++) {
+	for(size_t j = 0; j < 1; j++) {
+
 		for(size_t i = 0; i < bd.size(); i++) {
 			for(size_t k = 0; k < bd[0].size(); k++) {
 				if(bd[i][k].number != 0 && bd[i][k].is_visited == false) {
@@ -924,3 +929,73 @@ int Board::check_free_space(Area move) {
 }	
 
 
+int Board::check_single_cell_moves(Cell cell, Cell &possible_move) {
+	int moves = 0;
+	vector<Cell> area;
+	select_area_special(cell, area);
+	if((int)area.size() == cell.number) {
+		for(Cell i : area) {
+			if(bd[i.coord.x][i.coord.y].is_on_going == true) {
+				bd[i.coord.x][i.coord.y].is_on_going = false;
+			}	
+			if(bd[i.coord.x][i.coord.y].is_visited == false) {
+
+				bd[i.coord.x][i.coord.y].is_visited = true;
+			}	
+		}	
+		return 0;
+	}	
+	Poss ps[4] = { Poss(cell.coord.x-1, cell.coord.y), Poss(cell.coord.x+1, cell.coord.y), Poss(cell.coord.x, cell.coord.y-1), Poss(cell.coord.x, cell.coord.y+1) };
+	for(int k = 0; k < 4; k++) {
+		if(moves > 1) return moves;
+		if(ps[k].x >= 0 && (size_t)ps[k].x < bd.size() && ps[k].y >= 0 && (size_t)ps[k].y < bd[0].size()) {
+			if(bd[ps[k].x][ps[k].y].number == 0) {
+				possible_move = Cell(Poss(ps[k].x, ps[k].y), cell.number, false);
+				moves++;
+			}		
+		}
+	}		
+	return moves;
+}	
+
+void Board::select_area_special(Cell cell, vector<Cell> &area) {
+	vector<Cell> stack;
+	stack.push_back(cell);
+	bd[stack.back().coord.x][stack.back().coord.y].is_visited;
+	area.push_back(bd[stack.back().coord.x][stack.back().coord.y]);
+	while(stack.size() > 0) {
+		Poss ps[4] = {Poss(stack.back().coord.x-1, stack.back().coord.y), Poss(stack.back().coord.x+1, stack.back().coord.y), Poss(stack.back().coord.x, stack.back().coord.y-1), Poss(stack.back().coord.x, stack.back().coord.y+1) };
+
+		int i = 0;
+		for(i = 0; i < 4; i++) {
+			if(ps[i].x < 0 || (size_t)ps[i].x >= bd.size() || ps[i].y < 0 || (size_t)ps[i].y >= bd[0].size()) continue;
+			if(bd[ps[i].x][ps[i].y].number == cell.number && bd[ps[i].x][ps[i].y].is_visited == false) {
+				bd[ps[i].x][ps[i].y].is_visited = true;
+				area.push_back(bd[ps[i].x][ps[i].y]);
+				stack.push_back(bd[ps[i].x][ps[i].y]);
+				break;	
+			}
+		}
+       		if(i == 4) stack.pop_back();	
+	}
+	for(Cell i : area) {
+		bd[i.coord.x][i.coord.y].is_visited = false;
+	}	
+	area.pop_back();
+}
+
+void Board::single_cell_move_on_board(Cell move, bool status) {
+	//Move on board
+	if(status == true) {
+		bd[move.coord.x][move.coord.y].number = move.number;
+		bd[move.coord.x][move.coord.y].is_on_going = true;
+		return;
+	}
+	//Remove move on boad
+	if(move.is_visited == true) {
+		bd[move.coord.x][move.coord.y].is_visited = false;
+		return;
+	}	
+	bd[move.coord.x][move.coord.y].number = 0;
+	bd[move.coord.x][move.coord.y].is_on_going = false;
+}

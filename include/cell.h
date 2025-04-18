@@ -30,6 +30,7 @@ public:
 	int number;
 	bool is_visited;
 	bool is_in_stack;
+	bool is_on_going;
 	StackCell in_stack;
 
 

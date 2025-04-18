@@ -26,6 +26,7 @@ Cell::Cell() {
 	number = 0;
 	is_visited = false;
 	is_in_stack = false;	
+	is_on_going = false;
 }
 
 Area::Area(int number, vector<Cell> cells) {
