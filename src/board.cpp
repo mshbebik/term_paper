@@ -357,7 +357,7 @@ vector<Area> Board::get_possible_moves(Cell cell) {
 		
 	while(stack.size() > 0) {
 		
-		if(path_counter > 200) {
+		if(path_counter > ((cell.number == 7) ? 1200 : 200)) {
 			for(Poss l : stack) {
 				bd[l.x][l.y].is_in_stack = false;
 				bd[l.x][l.y].in_stack.went_back_near = 0;
@@ -646,15 +646,30 @@ void Board::make_move(Cell cell) {
 		move_on_board(not_blocked_move[0]);
 		return;
 	}
+	/*
+	vector<Area> mvs;
+	vector<int> free_space;
 	for(Area i : not_blocked_move) {
 		if(is_piercies(i) >= 2 && is_touch_same_number(i) == false) {
-			cout << "Block >= 2: " << moves[0].number << endl;
+			//cout << "Block >= 2: " << moves[0].number << endl;
+			mvs.push_back(i);
+			free_space.push_back(check_free_space(i));
 		//	if(check_is_any_cells_blocked_deep(i) == false) {
-			       	move_on_board(i);
-				return;	
+			      // 	move_on_board(i);
 		//	}	
 		}	
-	}	
+	}
+	if(mvs.size() == 0) return;
+	int temp = 0;
+	Area move;	
+	for(size_t i = 0; i < mvs.size(); i++) {
+		if(free_space[i] > temp) {
+			temp = free_space[i];
+			move = mvs[i];
+		}	
+	}
+	cout << temp << "," << move.number << endl;
+	move_on_board(move);	
 //	vector<Area> groat;
 //	vector<int> diff;
 //	for(Area i : not_blocked_move) {
@@ -674,6 +689,7 @@ void Board::make_move(Cell cell) {
 //		}	
 //	}	
 //	move_on_board(move);
+	*/
 	
 }
 
@@ -702,7 +718,7 @@ void Board::move_on_board(Area move, bool status) {
 void Board::solve() {
 	parse_areas();
 //	while(is_board_solved()) {
-	for(size_t j = 0; j < 1; j++) {
+	for(size_t j = 0; j < 3; j++) {
 		for(size_t i = 0; i < bd.size(); i++) {
 			for(size_t k = 0; k < bd[0].size(); k++) {
 				if(bd[i][k].number != 0 && bd[i][k].is_visited == false) {
@@ -876,5 +892,35 @@ bool Board::is_groat_move(Area move, int &difference) {
 	return ((all - 1 == blocked) || (all-2 == blocked)) ? true : false;
 }	
 
+
+
+int Board::check_free_space(Area move) {
+	int free_space = 0;
+	for(Cell i : move.cells) {
+		Poss ps[4] = { Poss(i.coord.x-1, i.coord.y), Poss(i.coord.x+1, i.coord.y), Poss(i.coord.x, i.coord.y-1), Poss(i.coord.x, i.coord.y+1) };
+		for(int k = 0; k < 4; k++) {
+			if(ps[k].x >= 0 && (size_t)ps[k].x < bd.size() && ps[k].y >= 0 && (size_t)ps[k].y < bd[0].size()) {
+				if(bd[ps[k].x][ps[k].y].number == move.number) {
+					bool status = false;
+					for(Cell j : move.cells) {
+						if(ps[k].x == j.coord.x && ps[k].y == j.coord.y) {
+							status = true;	
+							break;
+						}	
+					}
+					if(status == true) continue;	
+					free_space++;
+				}	
+				else{
+					free_space++;
+				}	
+			}	
+			else {
+				free_space++;
+			}	
+		}	
+	}	
+	return free_space;
+}	
 
 

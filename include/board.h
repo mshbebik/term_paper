@@ -42,6 +42,7 @@ public:
 	bool is_stand_near(Cell start, Cell check);
 	bool check_is_any_cells_blocked_deep(Area move);
 	bool is_groat_move(Area move, int &difference);
+	int check_free_space(Area move); 
 
 };
 

@@ -10,7 +10,7 @@ int main (void){
 	nw.print_board();	
 	cout << "Total variants: " << nw.get_count() << endl;
 	*/
-	Board nw("C:\\Users\\mbeby\\OneDrive\\Рабочий стол\\test_grid3.txt");
+	Board nw("C:\\Users\\mbeby\\OneDrive\\Рабочий стол\\test_grid4.txt");
 	nw.print_board();
 //	nw.parse_areas();
 //	if(nw.is_board_solved()) {
@@ -20,6 +20,7 @@ int main (void){
 //		cout << "not solved" << endl;
 //	}
 //	nw.bd[1][1].number = 2;
+//	nw.print_possible_moves(Cell(Poss(6, 1), 7, true));
 	nw.solve();
 //	cout << "dsfsdfsdfd " << endl;
 //	nw.parse_areas();
