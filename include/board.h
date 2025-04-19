@@ -46,6 +46,7 @@ public:
 	int check_single_cell_moves(Cell cell, Cell &possible_move);
 	void single_cell_move_on_board(Cell move, bool status = true);
 	void select_area_special(Cell cell, vector<Cell> &area);
+	int is_touch_same_number_single(Cell cell, vector<Cell> current_cell_area);
 
 };
 
