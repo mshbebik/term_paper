@@ -19,6 +19,7 @@ Cell::Cell(Poss coord, int number, bool is_visited, bool is_in_stack) {
 	this->number = number;
 	this->is_visited = is_visited;
 	this->is_in_stack = is_in_stack;
+	is_counted = false;
 }
 
 Cell::Cell() {
@@ -27,7 +28,12 @@ Cell::Cell() {
 	is_visited = false;
 	is_in_stack = false;	
 	is_on_going = false;
+	is_counted = false;
 }
+
+bool Cell::operator==(const Cell &obj) {
+	return 	(this->coord.x == obj.coord.x && this->coord.y == obj.coord.y) ? true : false;
+}	
 
 Area::Area(int number, vector<Cell> cells) {
 	this->number = number;

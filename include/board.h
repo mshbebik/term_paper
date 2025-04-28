@@ -43,10 +43,15 @@ public:
 	bool check_is_any_cells_blocked_deep(Area move);
 	bool is_groat_move(Area move, int &difference);
 	int check_free_space(Area move); 
-	int check_single_cell_moves(Cell cell, Cell &possible_move);
+	vector<Cell> check_single_cell_moves(Cell cell);
 	void single_cell_move_on_board(Cell move, bool status = true);
-	void select_area_special(Cell cell, vector<Cell> &area);
+	vector<Cell> select_area_special(Cell cell);
 	int is_touch_same_number_single(Cell cell, vector<Cell> current_cell_area);
+	int check_straightness(Area move);	
+	vector<Cell> get_neighbours(Cell cell);
+	vector<Cell> filter_moves_single(vector<Cell> moves);
+	bool is_move_blocks_single(Cell cell);
+	vector<Area> get_possible_moves_part(Cell cell);
 
 };
 

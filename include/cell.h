@@ -29,6 +29,7 @@ public:
 	Poss coord;
 	int number;
 	bool is_visited;
+	bool is_counted;
 	bool is_in_stack;
 	bool is_on_going;
 	StackCell in_stack;
@@ -36,6 +37,7 @@ public:
 
 	Cell(Poss coord, int number, bool is_visited = false, bool is_in_stack = false);
 	Cell();
+	bool operator==(const Cell &obj);
 };
 
 
