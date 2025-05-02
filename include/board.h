@@ -7,16 +7,6 @@ using namespace std;
 
 class Board{
 public:
-//	Cell bd[10][10] = {{0, 3, 5, 0, 5, 4, 0, 4, 4, 0},
-//	     		  {1, 0, 0, 0, 0, 0, 0, 0, 0, 6},
-//	    		  {3, 0, 0, 0, 0, 0, 0, 0, 0, 3},
-//	      		  {0, 0, 0, 2, 6, 2, 6, 0, 0, 0},
-//	       		  {6, 0, 0, 6, 0, 0, 2, 0, 0, 1},
-//	       		  {1, 0, 0, 2, 0, 0, 6, 0, 0, 2},
-//	       		  {0, 0, 0, 6, 2, 6, 2, 0, 0, 0},
-//	       		  {3, 0, 0, 0, 0, 0, 0, 0, 0, 5},
-//	       		  {2, 0, 0, 0, 0, 0, 0, 0, 0, 6},
-//	       		  {0, 3, 4, 0, 4, 6, 0, 2, 1, 0}};
 	vector<vector<Cell>> bd;	
 	vector<Area> areas;
 	Board(string file_name);
@@ -43,7 +33,7 @@ public:
 	bool check_is_any_cells_blocked_deep(Area move);
 	bool is_groat_move(Area move, int &difference);
 	int check_free_space(Area move); 
-	vector<Cell> check_single_cell_moves(Cell cell);
+	vector<Cell> check_single_cell_moves(Cell cell, bool status = true);
 	void single_cell_move_on_board(Cell move, bool status = true);
 	vector<Cell> select_area_special(Cell cell);
 	int is_touch_same_number_single(Cell cell, vector<Cell> current_cell_area);
@@ -52,6 +42,7 @@ public:
 	vector<Cell> filter_moves_single(vector<Cell> moves);
 	bool is_move_blocks_single(Cell cell);
 	vector<Area> get_possible_moves_part(Cell cell);
+	void mark_area_if_ready(Cell cell);
 
 };
 
