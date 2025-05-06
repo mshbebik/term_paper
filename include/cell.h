@@ -17,6 +17,7 @@ public:
 	bool is_went_back;
 	int went_back_near;
 	bool is_jumped_back;
+	Poss went_back_where;
 	vector<Poss> blocked;
 	vector<int> blocked_count;
 

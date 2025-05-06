@@ -8,17 +8,16 @@ using namespace std;
 class Board{
 public:
 	vector<vector<Cell>> bd;	
-	vector<Area> areas;
 	Board(string file_name);
 //	void init_board();
 	void init_from_file(string file_name);	
 	vector<vector <int>> parse_file(string file_name);
 	vector<int> split_by_space_int(string line);
-	void parse_areas();
+	vector<Area> parse_areas();
 	void select_area(Cell cell, Poss start, vector<Cell> &area);
 	bool is_board_solved();
 	void print_board();
-	void make_move(Cell cell);
+	bool make_move(Cell cell);
 //	void check_possible_moves(Poss start, Poss prev, int number, int nb_count, vector<Area> &moves, int &path_counter, bool status = false, int index = 0);
 	void print_possible_moves(Cell cell);
 	void solve();
@@ -43,6 +42,16 @@ public:
 	bool is_move_blocks_single(Cell cell);
 	vector<Area> get_possible_moves_part(Cell cell);
 	void mark_area_if_ready(Cell cell);
+
+	void print_moves(vector<Area> moves);
+	bool check_is_moves_identical(Area move1, Area move2);
+	void fill_free_space();
+	void find_combinations(int n, int max_num, vector<int> &current, vector<vector<int>> &result);
+	vector<vector<int>> partition_number(int number);
+	void fill_area(vector<Cell> area);
+
+
+
 
 };
 

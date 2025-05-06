@@ -53,6 +53,7 @@ StackCell::StackCell() {
 	is_went_back = false;
 	is_jumped_back = false;
 	went_back_near = 0;
+	went_back_where = Poss();
 	blocked_count.push_back(0);
 
 }	
