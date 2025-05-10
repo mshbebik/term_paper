@@ -4,17 +4,157 @@
 #include <sstream>
 #include <fstream>
 #include <algorithm> // for swap() and min() functions
+#include <cstdlib> // for system("cls")		     
+#include <ctype.h> // for isdigit() and tolower()		  
 #include "board.h"
 using namespace std;
+
+
+
+Board::Board() {
+
+}	
 
 //initialize grid from file constructor
 Board::Board(string file_name) {
 	init_from_file(file_name);
 }
 
+
+bool Board::init_from_user() {
+	system("cls");	
+	cout << "Enter the board row by row. Example: [1 3 0 4 5 6 \\n].\n" <<
+		 "After finishing a row, press Enter (as shown in the example).\n" <<
+		 "When the entire board is entered, press Enter again to submit.\n" << endl;
+
+	//to track char symbols to decide when the user is done with input
+	vector<char> track;
+	int row = 0;
+	while(true) {
+		bd.push_back(vector<Cell>());
+		cout << "Enter 'b' to go back." << endl;
+		cout << "Enter [" << row+1 <<"] row or Enter button to submit: ";
+		int column = 0;
+		bool is_empty_row = true;
+		bool rows_is_not_equal = false;
+		bool board_is_empty = false;
+		while(true) {
+			char next_symbol = cin.peek();
+			if(next_symbol == ' ' || next_symbol == '\n' || tolower(next_symbol) == 'b') {
+				next_symbol = cin.get();
+				track.push_back(next_symbol);	
+				if(next_symbol == '\n' || next_symbol == 'b') { 
+					if(track.size() == 1 && track.back() == '\n') {
+						bd.pop_back();
+						system("cls");	
+						if(bd.size() == 0) {
+							board_is_empty = true;
+							track.clear();
+							cout << "Enter the board row by row. Example: [1 3 0 4 5 6 \\n].\n" <<
+							 "After finishing a row, press Enter (as shown in the example).\n" <<
+							 "When the entire board is entered, press Enter again to submit.\n" << endl;
+							break;
+						}		
+						return true;
+					}
+					if(track.size() == 1 && tolower(track[0]) == 'b') {
+						bd.clear();
+						while(cin.get() != '\n') {};
+						return false;
+					}	
+					if((int)bd.size() > 1 && is_all_rows_equal() != true) {
+						rows_is_not_equal = true;
+						break;
+					}	
+					row++;
+					track.clear();
+				       	break;
+				}	
+				continue;
+					
+			}
+			if(isdigit(next_symbol)) {
+				is_empty_row = false;
+				int number = 0;
+				cin >> number;
+				track.push_back(next_symbol);	
+				bd[row].push_back(Cell(Poss(row, column), number));	
+				column++;
+			}
+			else {
+				next_symbol = cin.get();
+				track.push_back(next_symbol);	
+				continue;
+			}	
+		}
+		if(board_is_empty) {
+			continue;
+		}	
+		if(rows_is_not_equal) {
+			if(fix_rows_size() == 1) continue;
+			row = 0;
+			continue;
+		}	
+		if(is_empty_row == true) {
+			bd.pop_back();
+			row--;
+			system("cls");	
+			cout << "Enter the board row by row. Example: [1 3 0 4 5 6 \\n].\n" <<
+				 "After finishing a row, press Enter (as shown in the example).\n" <<
+				 "When the entire board is entered, press Enter again to submit.\n" << endl;
+			cout << endl;
+			cout << "\033[31m### Enter row as shown in the example, all non digit symbols will be igonered! ###\033[0m" << endl;
+			continue;
+		}	
+		system("cls");	
+		print_board();
+	}	
+//	bd.pop_back();
+	return true;
+}	
+
+bool Board::is_all_rows_equal() {
+	int size = (int)bd[0].size();
+	for(vector<Cell> i : bd) {
+		if(size != (int)i.size()) return false;	
+	}
+	return true;	
+}	
+
+//to fix accident when user entered not equal number of symbols in rows.
+//function return 1 when last 'wrong' row need to be rewrited and 2 when user choosed to rewrite entire board.
+int Board::fix_rows_size() {
+	cout << "\033[31m### Every row has to contain equal number of numbers! ###\033[0m" << endl;
+	cout << "Enter 1 to rewrite last row, or 2 to rewrite whole board." << endl;
+	char choice = ' ';
+	cout << "Your choice [1/2]: ";
+	while((choice = cin.get()) && (choice != '1' && choice != '2')) {
+		while(cin.get() != '\n') {};
+		cout << "\033[31m### Enter one of the option. ###\033[0m" << endl;
+		cout << "Your choice [1/2]: ";
+	}	
+	if(choice == '1') {
+		while(cin.get() != '\n') {};
+		bd.pop_back();
+		return 1;	
+	}
+	if(choice == '2') {
+		while(cin.get() != '\n') {};
+		bd.clear();
+		return 2;	
+	}		
+	return 0;
+}	
+
+
 //initialize grid from file
 void Board::init_from_file(string file_name) {
-	vector<vector<int>> nums = parse_file(file_name);
+	vector<vector<int>> nums;
+	try {
+		nums = parse_file(file_name);
+	} catch (...) {
+		throw 0;
+	}	
 	for(size_t i = 0; i < nums.size(); i++) {
 		bd.push_back(vector<Cell>());
 		for(size_t k = 0; k < nums[0].size(); k++) {
@@ -27,22 +167,38 @@ void Board::init_from_file(string file_name) {
 vector<vector <int>> Board::parse_file(string file_name) {
 	ifstream file(file_name);
 	
-	if(!file.is_open()) {
-		cerr << "Error: Can't open \"" << file_name << "\" file for parsing." << endl;
-		exit(1);
-	}
+	try {
+		if(!file.is_open()) {
+			cerr << "\033[31mError: Can't open \"" << file_name << "\" file for parsing.\033[0m" << endl;
+			throw 0;	
+		}
+	} catch (...) {
+		throw 0;
+	}	
 	vector<vector <int>> nums;
 	string line;
 	while(getline(file, line)){
+		try {
 		nums.push_back(split_by_space_int(line));
+		} catch (...) {
+			cerr << endl << "\033[31mError: \"" << file_name << "\" contains non-numeric symbols.\033[0m" << endl;
+			cerr << "\033[31mError: File must contain only digits separeted by spaces, as shown in the example\033[0m" << endl;
+			throw 0;
+		}	
+
 	}	
 	file.close();
 	size_t width = nums[0].size();
 	for(size_t i = 0; i < nums.size(); i++) {
-		if(nums[i].size() != width) {
-			cerr << "Error: Inccorrect input in \"" << file_name << "\"" << endl; 
-			exit(1);
-		}
+		try {
+			if(nums[i].size() != width) {
+				cerr << endl << "\033[31mError: Inccorrect input in \"" << file_name << "\"\033[0m" << endl; 
+				cerr << "\033[31mError: Rows has different lenght!\033[0m" << endl;
+				throw 0;	
+			}
+		} catch (...) {
+			throw 0;
+		}	
 	}	
 	return nums;	
 }
@@ -51,18 +207,179 @@ vector<vector <int>> Board::parse_file(string file_name) {
 vector<int> Board::split_by_space_int(string line) {
 	vector<int> splited;
 	for(size_t i = 0; i < line.size(); i++) {
-		if(line[i] != ' ') {
-			splited.push_back(line[i] - '0');		
+		if(isdigit(line[i])) {
+			int number = 0;
+			number += (line[i] - '0');
+			while(isdigit(line[i+1])) {
+				number *= 10;
+				number += (line[++i] - '0');
+			}		
+			splited.push_back(number);		
+			continue;
 		}		
+		if(line[i] != ' ') {
+			throw 0;	
+		}
 	}
 	return splited;
 }
+/*
+void Board::solve() {
+	//just fo print_board() when user input already solved board.
+	bool is_grid_already_solved = true;
+	while(!is_board_solved()) {
+		is_grid_already_solved = false;
+//	for(size_t j = 0; j < 11; j++) {
+		bool is_main_cells_filled = true;
+		int  moves_was_made = 0;
+		for(size_t i = 0; i < bd.size(); i++) {
+			for(size_t k = 0; k < bd[0].size(); k++) {
+				if(bd[i][k].number != 0 && bd[i][k].is_visited == false) {
+					is_main_cells_filled = false;
+					if(make_move(Cell(Poss(i, k), bd[i][k].number, true))) moves_was_made++;
+				//	show_visited_cells();
+				}
+			}		
+		}
+		if(is_main_cells_filled == true) {
+			fill_free_space(); 
+		}
+		if(moves_was_made == 0 && is_main_cells_filled == false) {
+			print_board();	
+			cout << "I could'nt solve your grid :( " << endl;
+			bd.clear();
+			return;
 
+		}	
+		print_board();	
+		
+	}	
+	if(is_grid_already_solved == true) print_board(); 
+	cout << "The grid is solved !!!" << endl;
+	bd.clear();
+	//	parse_areas();
+//	}	
+//
+}	
+*/
+
+void Board::solve_by_user() {
+	system("cls");
+	while(!is_board_solved()) {
+		while(true) {
+			print_board();
+			// first number is coordinate x, second is y and last one is cell number.
+			int storage[3];
+		        for(int i = 0; i < 3; i++) {
+				storage[i] = 0;
+			}	
+			cout << "Enter coordinates of cell and value of number you want to put separated with space. Example: 1 1 3" << endl;
+			cout << "First number means row number, second column number and third value that will be put in cell." << endl;
+			cout << "Enter 'b' to go back to menu. " << endl;
+			cout << "Enter cell coordinates and number: ";
+			char ch = ' ';
+			int index = 0;
+			bool is_non_numeric_symbol = false;
+			while((ch = cin.get()) != '\n') {
+				if(tolower(ch) == 'b' && cin.peek() == '\n') {
+				       	cin.get();
+					bd.clear();
+					return;
+				}	
+				int value = 0;
+				if(isdigit(ch)) { 
+					value += (ch - '0');
+					while(isdigit(ch = cin.peek())) {
+						ch = cin.get();	
+						value *= 10;
+						value += (ch - '0');
+					}		
+
+				       		
+					storage[index++] = value;
+					continue;
+				}
+				if(ch != ' ') {
+					is_non_numeric_symbol = true;
+					while(cin.get() != '\n') {}
+					break;
+				}	
+			}	
+
+			if(is_non_numeric_symbol) {
+				cout << endl << "\033[31mEnter only numeric symbols separeted by spaces.\033[0m" << endl;
+				continue;
+			}	
+			if(index > 3) {
+				cout << endl << "\033[31mEnter only 3 number as shown in the example\033[0m" << endl;
+				continue;
+			}	
+			
+			int x = storage[0];
+			int y = storage[1];
+			int number = storage[2];
+
+		//	if(isdigit(x) && isdigit(y) && isdigit(number)) {
+			if(x <= 0 || x > (int)bd.size() || y <= 0 || y > (int)bd[0].size()) {
+				cout << endl << "\033[31mError: there's no cell on the board with such coordinates. \033[0m" << endl;
+				continue;
+			}
+			if(number < 0 ) {
+				cout << endl << "\033[31mError: value can't be negative.\033[0m" << endl;
+				continue;
+			}	
+			if(number > (int)(bd.size() * bd[0].size())) {
+				cout << endl << "\033[31mError: the board has'nt enough cells for this value.\033[0m" << endl;
+				continue;
+			}
+		//	}	
+				 
+		//	else {
+		//		cout << "Enter coordinates as shown in the example with numeric symbols." << endl;
+		//		continue;	
+		//	}	
+			int is_valid = check_is_user_move_valid(Cell(Poss(x-1, y-1), number, true));
+			if(is_valid == 2) {
+				cout << endl << "\033[31mYou can't put cell with that number there.\033[0m" << endl;
+				cout << "\033[31mIt form an area with dimensions that do not correspond to the number of this number.\033[0m" << endl;
+				continue;
+			}	
+			if(is_valid == 3) {
+				cout << endl << "\033[31mYou can't put cell with that number there.\033[0m" << endl;
+				cout << "\033[31mIt blocks other cells.\033[0m" << endl;
+				continue;
+			}	
+			single_cell_move_on_board(Cell(Poss(x-1, y-1), number, true));
+			mark_area_if_ready(Cell(Poss(x-1, y-1), number, true));
+			system("cls");
+			break;
+		}		
+
+
+	}	
+	print_board(); 
+	cout << "The grid is solved !!!" << endl;
+	bd.clear();
+
+}	
+
+int Board::check_is_user_move_valid(Cell cell) {
+	vector<Cell> cell_area = select_area_special(cell);
+	//return 3 if move blocks other cells
+	if(is_move_blocks_single(cell) == true) return 3;
+	//return 2 if move touches another area with same number and they form an area with dimensions that do not correspond to the number of this number
+//	if(is_touch_same_number(Area(cell.number, cell_area)) == true) return 2; 
+	if(cell.number > 0 && (int)cell_area.size() > cell.number) return 2;
+
+	//return 1, if move is valid
+	return 1;
+}
 
 
 
 //prints board
 void Board::print_board() {
+	
 	cout << endl << "    ";
 	for(size_t i = 0; i < bd[0].size(); i++) {
 		cout << i+1 << " ";
@@ -86,6 +403,7 @@ void Board::print_board() {
 
 }
 
+//
 vector<Area> Board::parse_areas() {
 	vector<Area> areas;
 	while(true) {
@@ -140,7 +458,7 @@ void Board::select_area(Cell cell, Poss start, vector<Cell> &area) {
 
 bool Board::is_board_solved() {
 	vector<Area> areas = parse_areas();
-	int sum;
+	int sum = 0;
 	for(Area i : areas) {
 		sum += i.number;
 	}
@@ -669,7 +987,8 @@ void Board::move_on_board(Area move, bool status) {
 	}	
 }	
 
-void Board::solve() {
+void Board::solve(bool show_steps) {
+	//just fo print_board() when user input already solved board.
 	while(!is_board_solved()) {
 //	for(size_t j = 0; j < 11; j++) {
 		bool is_main_cells_filled = true;
@@ -678,7 +997,10 @@ void Board::solve() {
 			for(size_t k = 0; k < bd[0].size(); k++) {
 				if(bd[i][k].number != 0 && bd[i][k].is_visited == false) {
 					is_main_cells_filled = false;
-					if(make_move(Cell(Poss(i, k), bd[i][k].number, true))) moves_was_made++;
+					if(make_move(Cell(Poss(i, k), bd[i][k].number, true))){
+					       	moves_was_made++;
+						if(show_steps) print_board();	
+					}
 				//	show_visited_cells();
 				}
 			}		
@@ -687,14 +1009,17 @@ void Board::solve() {
 			fill_free_space(); 
 		}
 		if(moves_was_made == 0 && is_main_cells_filled == false) {
+			print_board();	
 			cout << "I could'nt solve your grid :( " << endl;
+			bd.clear();
 			return;
 
 		}	
-		print_board();	
 		
 	}	
+	print_board();
 	cout << "The grid is solved !!!" << endl;
+	bd.clear();
 	//	parse_areas();
 //	}	
 //

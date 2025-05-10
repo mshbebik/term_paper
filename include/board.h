@@ -6,11 +6,17 @@
 using namespace std;
 
 class Board{
-public:
 	vector<vector<Cell>> bd;	
+public:
+	Board();
 	Board(string file_name);
 //	void init_board();
 	void init_from_file(string file_name);	
+	bool init_from_user();
+	bool is_all_rows_equal();
+	int fix_rows_size();
+	void solve_by_user();
+	int check_is_user_move_valid(Cell cell);
 	vector<vector <int>> parse_file(string file_name);
 	vector<int> split_by_space_int(string line);
 	vector<Area> parse_areas();
@@ -20,7 +26,7 @@ public:
 	bool make_move(Cell cell);
 //	void check_possible_moves(Poss start, Poss prev, int number, int nb_count, vector<Area> &moves, int &path_counter, bool status = false, int index = 0);
 	void print_possible_moves(Cell cell);
-	void solve();
+	void solve(bool show_steps);
 	bool check_is_any_cells_blocked(Area move);
 	void move_on_board(Area move, bool status = true);
 	void show_visited_cells();
