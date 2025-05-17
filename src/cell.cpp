@@ -3,18 +3,18 @@
 using namespace std;
 
 
-Poss::Poss(int x, int y) {
+Pos::Pos(int x, int y) {
 	this->x = x;
 	this->y = y;
 
 }
 
-Poss::Poss() {
+Pos::Pos() {
 	x = -1;
 	y = -1;
 }
 
-Cell::Cell(Poss coord, int number, bool is_visited, bool is_in_stack) {
+Cell::Cell(Pos coord, int number, bool is_visited, bool is_in_stack) {
 	this->coord = coord;
 	this->number = number;
 	this->is_visited = is_visited;
@@ -23,7 +23,7 @@ Cell::Cell(Poss coord, int number, bool is_visited, bool is_in_stack) {
 }
 
 Cell::Cell() {
-	coord = Poss();
+	coord = Pos();
 	number = 0;
 	is_visited = false;
 	is_in_stack = false;	
@@ -51,9 +51,7 @@ Area::Area(int number) {
 
 StackCell::StackCell() {
 	is_went_back = false;
-	is_jumped_back = false;
 	went_back_near = 0;
-	went_back_where = Poss();
 	blocked_count.push_back(0);
 
 }	

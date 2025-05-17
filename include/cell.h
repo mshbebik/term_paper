@@ -3,22 +3,20 @@
 #include <vector>
 using namespace std;
 
-class Poss {
+class Pos {
 public:
 	int x;
 	int y;
 
-	Poss(int x, int y);
-	Poss();
+	Pos(int x, int y);
+	Pos();
 };
 
 class StackCell {
 public:
 	bool is_went_back;
 	int went_back_near;
-	bool is_jumped_back;
-	Poss went_back_where;
-	vector<Poss> blocked;
+	vector<Pos> blocked;
 	vector<int> blocked_count;
 
 	StackCell();
@@ -27,7 +25,7 @@ public:
 
 class Cell {
 public:
-	Poss coord;
+	Pos coord;
 	int number;
 	bool is_visited;
 	bool is_counted;
@@ -36,7 +34,7 @@ public:
 	StackCell in_stack;
 
 
-	Cell(Poss coord, int number, bool is_visited = false, bool is_in_stack = false);
+	Cell(Pos coord, int number, bool is_visited = false, bool is_in_stack = false);
 	Cell();
 	bool operator==(const Cell &obj);
 };

@@ -10,7 +10,6 @@ class Board{
 public:
 	Board();
 	Board(string file_name);
-//	void init_board();
 	void init_from_file(string file_name);	
 	bool init_from_user();
 	bool is_all_rows_equal();
@@ -20,11 +19,10 @@ public:
 	vector<vector <int>> parse_file(string file_name);
 	vector<int> split_by_space_int(string line);
 	vector<Area> parse_areas();
-	void select_area(Cell cell, Poss start, vector<Cell> &area);
+	void select_area(Cell cell, Pos start, vector<Cell> &area);
 	bool is_board_solved();
 	void print_board();
 	bool make_move(Cell cell);
-//	void check_possible_moves(Poss start, Poss prev, int number, int nb_count, vector<Area> &moves, int &path_counter, bool status = false, int index = 0);
 	void print_possible_moves(Cell cell);
 	void solve(bool show_steps);
 	bool check_is_any_cells_blocked(Area move);
@@ -33,16 +31,10 @@ public:
 	bool is_touch_same_number(Area move);
 	int check_possible_moves(Cell cell);
 	vector<Area> get_possible_moves(Cell cell);
-	int is_piercies(Area move);
-	bool is_stand_near(Cell start, Cell check);
-	bool check_is_any_cells_blocked_deep(Area move);
-	bool is_groat_move(Area move, int &difference);
-	int check_free_space(Area move); 
 	vector<Cell> check_single_cell_moves(Cell cell, bool status = true);
 	void single_cell_move_on_board(Cell move, bool status = true);
 	vector<Cell> select_area_special(Cell cell);
 	int is_touch_same_number_single(Cell cell, vector<Cell> current_cell_area);
-	int check_straightness(Area move);	
 	vector<Cell> get_neighbours(Cell cell);
 	vector<Cell> filter_moves_single(vector<Cell> moves);
 	bool is_move_blocks_single(Cell cell);

@@ -49,9 +49,16 @@ bool select_input_type(Board &obj) {
 				while(cin.get() != '\n') {};
 				while(true)  {
 					cout << endl << "Example of file: " << endl << endl;
-					cout << "1 2 1 0" << endl;
-					cout << "0 0 0 0" << endl;
-					cout << "0 0 0 1" << endl << endl;
+
+					cout << "┌─────────────────────────┐" << endl;
+					cout << "│ yourfile.txt    ─  ■  X │" << endl;
+					cout << "├─────────────────────────┤" << endl;
+					cout << "│ 1 2 1 0                 │" << endl;
+					cout << "│ 0 0 0 0                 │" << endl;
+					cout << "│ 0 0 0 1                 │" << endl;
+					cout << "│                         │" << endl;
+					cout << "│                         │" << endl;
+					cout << "└─────────────────────────┘" << endl << endl;
 					 
 					cout << "Rules: " << endl;
 					cout << "1. Each number must to be separated by space." << endl; 
@@ -121,93 +128,9 @@ bool should_show_steps() {
 int main (void){
 
 	Board nw;
-//	nw.init_from_user();
-//	nw.print_board();	
-
-//	Board nw("C:\\Users\\mbeby\\OneDrive\\Рабочий стол\\test_grid2.txt");
-//	nw.parse_areas();
-//	if(nw.is_board_solved()) {
-//		cout << "solved" << endl;
-//	}
-//	else{ 
-//		cout << "not solved" << endl;
-//	}
-//	nw.bd[1][1].number = 2;
-//	nw.solve();
-//	nw.print_possible_moves(Cell(Poss(6, 3), 5, true));
-//	nw.solve();
-//	cout << "dsfsdfsdfd " << endl;
-//	nw.parse_areas();
-//	nw.print_board();
-//	nw.show_visited_cells();
-//	nw.print_possible_moves(Poss(8, 4), Poss(-1, -1), 8, 1);
-//	vector<Area> moves = nw.get_possible_moves_itt(Cell(Poss(0, 2), 3, false));
-//	int index = 0;
-//	for(Area i : moves) {
-//		for(Cell k : i.cells) {
-//			cout << "[" << index << "]: (" << k.coord.x+1 << ", " << k.coord.y+1 << ")" << endl;
-//		}
-//		index++;	
-//	}	
 
 
-
-
-	
-//	nw.show_visited_cells();
-//	nw.move_on_board(moves[2]);
-//	nw.print_board();
-//	nw.show_visited_cells();
-//	nw.single_cell_move_on_board(Cell(Poss(0, 0), 3, true));
-//	nw.print_possible_moves(Cell(Poss(1, 2), 7, true));
-//	nw.print_board();
-//	nw.move_on_board(moves[2], false);
-//	nw.print_board();
-//	nw.show_visited_cells();
-//	
-//	for(Cell i : nw.select_area_special(Cell(Poss(1, 9), 6, false))) {
-//		cout << "(" << i.coord.x+1 << ", " << i.coord.y+1 << ")" << endl; 
-//	}	
-	
-//     	vector<Cell> moves = nw.check_single_cell_moves(Cell(Poss(6, 3), 3, true));
-//	for(Cell i : moves) { 
-//		cout << "(" << i.coord.x+1 << ", " << i.coord.y+1 << ")" << endl; 
-//	}	
-//	cout << endl;
-//	cout << nw.is_move_blocks_single(Cell(Poss(8, 5), 3, true)) << endl;
-//	nw.single_cell_move_on_board(Cell(Poss(8, 5), 3, false));
-//	nw.print_possible_moves(Cell(Poss(4, 2), 9, true));
-//	vector<Cell> filt_moves = nw.filter_moves_single(moves);
-//	for(Cell i : filt_moves) {
-//		cout << "(" << i.coord.x+1 << ", " << i.coord.y+1 << ")" << endl; 
-//	}
-		
-	/*	
-	vector<Area> moves = nw.get_possible_moves_part(Cell(Poss(1, 6), 7, true));
-	int index = 1;
-	for(Area i : moves) {
-		for(Cell j : i.cells) {
-			cout << "[" << index << "] " << "(" << j.coord.x+1 << ", " << j.coord.y+1 << ")" << endl; 
-		}	
-		index++;
-		cout << endl;
-	}	
-	*/
-
-		
-
-//	cout << nw.is_move_blocks_single(Cell(Poss(5, 7), 7, false));
-
-//	nw.print_board();
-	
-	//MENU//
-	
-
-	
-
-
-
-	
+	//Menu	
 	char choice = ' ';
 	bool should_shw_steps = false;
 	options();	
